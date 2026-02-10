@@ -1,0 +1,8 @@
+export { CatalogoProductoController } from './catalogo-producto.controller';
+export { CatalogoController } from './catalogo.controller';
+export { DespachoController } from './despacho.controller';
+export { DisponibilidadZonaController } from './disponibilidad-zona.controller';
+export { NotaCreditoController } from './nota-credito.controller';
+export { PedidoController } from './pedido.controller';
+export { ProductoController } from './producto.controller';
+export { PromocionController } from './promocion.controller';

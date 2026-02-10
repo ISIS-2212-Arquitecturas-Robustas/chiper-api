@@ -6,17 +6,40 @@ import { AppModule } from './../src/app.module';
 
 describe('Inventario (e2e)', () => {
   let app: INestApplication<App>;
+  let testProductoId: string;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
+
+    // Create a test producto
+    const productoResponse = await request(app.getHttpServer())
+      .post('/logistics/productos')
+      .send({
+        codigoInterno: 'TEST001',
+        codigoBarras: '1234567890123',
+        nombre: 'Producto Test',
+        marca: 'Marca Test',
+        categoria: 'Categoria Test',
+        presentacion: 'Unidad',
+        precioBase: 10.0,
+        monedaId: '550e8400-e29b-41d4-a716-446655440000',
+      });
+
+    testProductoId = productoResponse.body.id;
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
+    // Clean up test data
+    if (testProductoId) {
+      await request(app.getHttpServer())
+        .delete(`/logistics/productos/${testProductoId}`)
+        .expect(200);
+    }
     await app.close();
   });
 
@@ -25,7 +48,7 @@ describe('Inventario (e2e)', () => {
       return request(app.getHttpServer())
         .post('/inventory/items')
         .send({
-          productoId: '3f9f1b40-d100-4fca-b186-6bdd040d5945', // From mock
+          productoId: testProductoId, // Test producto
           tiendaId: '9a2f2e7b-40c4-4c5f-a37c-baf722e18ab9', // From tienda mock
           cantidad: 10,
           precioVenta: 100.5,
@@ -34,9 +57,7 @@ describe('Inventario (e2e)', () => {
         .expect(201)
         .expect((res) => {
           expect(res.body).toHaveProperty('id');
-          expect(res.body.productoId).toBe(
-            '3f9f1b40-d100-4fca-b186-6bdd040d5945',
-          );
+          expect(res.body.productoId).toBe(testProductoId);
           expect(res.body.tiendaId).toBe(
             '9a2f2e7b-40c4-4c5f-a37c-baf722e18ab9',
           );
@@ -62,7 +83,7 @@ describe('Inventario (e2e)', () => {
       const createResponse = await request(app.getHttpServer())
         .post('/inventory/items')
         .send({
-          productoId: '3f9f1b40-d100-4fca-b186-6bdd040d5945',
+          productoId: testProductoId,
           tiendaId: '9a2f2e7b-40c4-4c5f-a37c-baf722e18ab9',
           cantidad: 5,
           precioVenta: 50.0,
@@ -85,7 +106,7 @@ describe('Inventario (e2e)', () => {
       const createResponse = await request(app.getHttpServer())
         .post('/inventory/items')
         .send({
-          productoId: '3f9f1b40-d100-4fca-b186-6bdd040d5945',
+          productoId: testProductoId,
           tiendaId: '9a2f2e7b-40c4-4c5f-a37c-baf722e18ab9',
           cantidad: 10,
           precioVenta: 100.0,
@@ -111,7 +132,7 @@ describe('Inventario (e2e)', () => {
       const createResponse = await request(app.getHttpServer())
         .post('/inventory/items')
         .send({
-          productoId: '3f9f1b40-d100-4fca-b186-6bdd040d5945',
+          productoId: testProductoId,
           tiendaId: '9a2f2e7b-40c4-4c5f-a37c-baf722e18ab9',
           cantidad: 10,
           precioVenta: 100.0,
@@ -134,7 +155,7 @@ describe('Inventario (e2e)', () => {
       const createResponse = await request(app.getHttpServer())
         .post('/inventory/items')
         .send({
-          productoId: '3f9f1b40-d100-4fca-b186-6bdd040d5945',
+          productoId: testProductoId,
           tiendaId: '9a2f2e7b-40c4-4c5f-a37c-baf722e18ab9',
           cantidad: 10,
           precioVenta: 100.0,
@@ -148,7 +169,7 @@ describe('Inventario (e2e)', () => {
         .post('/inventory/compras')
         .send({
           tiendaId: '9a2f2e7b-40c4-4c5f-a37c-baf722e18ab9',
-          productoId: '3f9f1b40-d100-4fca-b186-6bdd040d5945',
+          productoId: testProductoId,
           compraId: '6ba7b810-9dad-41d1-80b4-00c04fd430c8',
           itemInventarioId: itemId,
           fechaCompra: '2023-01-01T00:00:00.000Z',
@@ -182,7 +203,7 @@ describe('Inventario (e2e)', () => {
       const createResponse = await request(app.getHttpServer())
         .post('/inventory/items')
         .send({
-          productoId: '3f9f1b40-d100-4fca-b186-6bdd040d5945',
+          productoId: testProductoId,
           tiendaId: '9a2f2e7b-40c4-4c5f-a37c-baf722e18ab9',
           cantidad: 10,
           precioVenta: 100.0,
@@ -196,7 +217,7 @@ describe('Inventario (e2e)', () => {
         .post('/inventory/ventas')
         .send({
           tiendaId: '9a2f2e7b-40c4-4c5f-a37c-baf722e18ab9',
-          productoId: '3f9f1b40-d100-4fca-b186-6bdd040d5945',
+          productoId: testProductoId,
           ventaId: '6ba7b811-9dad-41d1-80b4-00c04fd430c8',
           itemInventarioId: itemId,
           fechaVenta: '2023-01-01T00:00:00.000Z',

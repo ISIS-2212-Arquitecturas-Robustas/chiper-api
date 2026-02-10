@@ -1,6 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProductoClientMock } from '../clients/producto.client.mock';
+import { ProductoService } from '../../logistica/services/producto.service';
 import { TiendaClientMock } from '../clients/tienda.client.mock';
 import { CreateRegistroCompraDto } from '../dtos/registro-compra/create-registro-compra.dto';
 import { QueryRegistroCompraDto } from '../dtos/registro-compra/query-registro-compra.dto';
@@ -15,7 +15,7 @@ describe('RegistroCompraService', () => {
   let service: RegistroCompraService;
   let registroRepo: jest.Mocked<RegistroCompraRepository>;
   let itemRepo: jest.Mocked<ItemInventarioRepository>;
-  let productoClient: jest.Mocked<ProductoClientMock>;
+  let productoService: jest.Mocked<ProductoService>;
   let tiendaClient: jest.Mocked<TiendaClientMock>;
 
   beforeEach(async () => {
@@ -50,7 +50,7 @@ describe('RegistroCompraService', () => {
           useValue: mockItemRepo,
         },
         {
-          provide: ProductoClientMock,
+          provide: ProductoService,
           useValue: mockProductoClient,
         },
         {
@@ -63,7 +63,7 @@ describe('RegistroCompraService', () => {
     service = module.get<RegistroCompraService>(RegistroCompraService);
     registroRepo = module.get(RegistroCompraRepository);
     itemRepo = module.get(ItemInventarioRepository);
-    productoClient = module.get(ProductoClientMock);
+    productoService = module.get(ProductoService);
     tiendaClient = module.get(TiendaClientMock);
   });
 
@@ -96,11 +96,12 @@ describe('RegistroCompraService', () => {
       const registro: RegistroCompraProductoTienda = {
         id: 'reg-1',
         ...dto,
+        itemInventario: item,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
-      productoClient.exists.mockResolvedValue(true);
+      productoService.exists.mockResolvedValue(true);
       tiendaClient.exists.mockResolvedValue(true);
       itemRepo.findById.mockResolvedValue(item);
       registroRepo.create.mockResolvedValue(registro);
@@ -108,7 +109,7 @@ describe('RegistroCompraService', () => {
 
       const result = await service.create(dto);
 
-      expect(productoClient.exists).toHaveBeenCalledWith(dto.productoId);
+      expect(productoService.exists).toHaveBeenCalledWith(dto.productoId);
       expect(tiendaClient.exists).toHaveBeenCalledWith(dto.tiendaId);
       expect(itemRepo.findById).toHaveBeenCalledWith(dto.itemInventarioId);
       expect(registroRepo.create).toHaveBeenCalledWith(dto);
@@ -139,7 +140,7 @@ describe('RegistroCompraService', () => {
         cantidad: 10,
       };
 
-      productoClient.exists.mockResolvedValue(false);
+      productoService.exists.mockResolvedValue(false);
 
       await expect(service.create(dto)).rejects.toThrow(BadRequestException);
     });
@@ -154,7 +155,7 @@ describe('RegistroCompraService', () => {
         cantidad: 10,
       };
 
-      productoClient.exists.mockResolvedValue(true);
+      productoService.exists.mockResolvedValue(true);
       tiendaClient.exists.mockResolvedValue(false);
 
       await expect(service.create(dto)).rejects.toThrow(BadRequestException);
@@ -170,7 +171,7 @@ describe('RegistroCompraService', () => {
         cantidad: 10,
       };
 
-      productoClient.exists.mockResolvedValue(true);
+      productoService.exists.mockResolvedValue(true);
       tiendaClient.exists.mockResolvedValue(true);
       itemRepo.findById.mockResolvedValue(null);
 
@@ -199,7 +200,7 @@ describe('RegistroCompraService', () => {
         registrosCompra: [],
       };
 
-      productoClient.exists.mockResolvedValue(true);
+      productoService.exists.mockResolvedValue(true);
       tiendaClient.exists.mockResolvedValue(true);
       itemRepo.findById.mockResolvedValue(item);
 
@@ -228,7 +229,7 @@ describe('RegistroCompraService', () => {
         registrosCompra: [],
       };
 
-      productoClient.exists.mockResolvedValue(true);
+      productoService.exists.mockResolvedValue(true);
       tiendaClient.exists.mockResolvedValue(true);
       itemRepo.findById.mockResolvedValue(item);
 
@@ -250,6 +251,7 @@ describe('RegistroCompraService', () => {
           cantidad: 10,
           createdAt: new Date(),
           updatedAt: new Date(),
+          itemInventario: {} as ItemInventario,
         },
       ];
 
@@ -272,6 +274,7 @@ describe('RegistroCompraService', () => {
         itemInventarioId: 'item-1',
         fechaCompra: new Date(),
         cantidad: 10,
+        itemInventario: {} as ItemInventario,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -306,6 +309,7 @@ describe('RegistroCompraService', () => {
         cantidad: 10,
         createdAt: new Date(),
         updatedAt: new Date(),
+        itemInventario: {} as ItemInventario,
       };
       const updatedRegistro: RegistroCompraProductoTienda = {
         ...registro,
@@ -341,13 +345,14 @@ describe('RegistroCompraService', () => {
         itemInventarioId: 'item-1',
         fechaCompra: new Date(),
         cantidad: 10,
+        itemInventario: {} as ItemInventario,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
       registroRepo.findById.mockResolvedValue(registro);
       itemRepo.decrementCantidad.mockResolvedValue(undefined);
-      registroRepo.delete.mockResolvedValue(undefined);
+      registroRepo.delete.mockResolvedValue(true);
 
       await service.delete('reg-1');
 

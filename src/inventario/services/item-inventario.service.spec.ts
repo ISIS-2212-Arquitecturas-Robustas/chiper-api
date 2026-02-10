@@ -1,6 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProductoClientMock } from '../clients/producto.client.mock';
+import { ProductoService } from '../../logistica/services/producto.service';
 import { TiendaClientMock } from '../clients/tienda.client.mock';
 import { CreateItemInventarioDto } from '../dtos/item-inventario/create-item-inventario.dto';
 import { QueryItemInventarioDto } from '../dtos/item-inventario/query-item-inventario.dto';
@@ -12,7 +12,7 @@ import { ItemInventarioService } from './item-inventario.service';
 describe('ItemInventarioService', () => {
   let service: ItemInventarioService;
   let repository: jest.Mocked<ItemInventarioRepository>;
-  let productoClient: jest.Mocked<ProductoClientMock>;
+  let productoService: jest.Mocked<ProductoService>;
   let tiendaClient: jest.Mocked<TiendaClientMock>;
 
   beforeEach(async () => {
@@ -38,7 +38,7 @@ describe('ItemInventarioService', () => {
           useValue: mockRepository,
         },
         {
-          provide: ProductoClientMock,
+          provide: ProductoService,
           useValue: mockProductoClient,
         },
         {
@@ -50,7 +50,7 @@ describe('ItemInventarioService', () => {
 
     service = module.get<ItemInventarioService>(ItemInventarioService);
     repository = module.get(ItemInventarioRepository);
-    productoClient = module.get(ProductoClientMock);
+    productoService = module.get(ProductoService);
     tiendaClient = module.get(TiendaClientMock);
   });
 
@@ -76,13 +76,13 @@ describe('ItemInventarioService', () => {
         registrosCompra: [],
       };
 
-      productoClient.exists.mockResolvedValue(true);
+      productoService.exists.mockResolvedValue(true);
       tiendaClient.exists.mockResolvedValue(true);
       repository.create.mockResolvedValue(item);
 
       const result = await service.create(dto);
 
-      expect(productoClient.exists).toHaveBeenCalledWith(dto.productoId);
+      expect(productoService.exists).toHaveBeenCalledWith(dto.productoId);
       expect(tiendaClient.exists).toHaveBeenCalledWith(dto.tiendaId);
       expect(repository.create).toHaveBeenCalledWith(dto);
       expect(result).toEqual({
@@ -106,10 +106,10 @@ describe('ItemInventarioService', () => {
         monedaId: 'usd',
       };
 
-      productoClient.exists.mockResolvedValue(false);
+      productoService.exists.mockResolvedValue(false);
 
       await expect(service.create(dto)).rejects.toThrow(BadRequestException);
-      expect(productoClient.exists).toHaveBeenCalledWith(dto.productoId);
+      expect(productoService.exists).toHaveBeenCalledWith(dto.productoId);
     });
 
     it('should throw BadRequestException if tienda does not exist', async () => {
@@ -121,7 +121,7 @@ describe('ItemInventarioService', () => {
         monedaId: 'usd',
       };
 
-      productoClient.exists.mockResolvedValue(true);
+      productoService.exists.mockResolvedValue(true);
       tiendaClient.exists.mockResolvedValue(false);
 
       await expect(service.create(dto)).rejects.toThrow(BadRequestException);

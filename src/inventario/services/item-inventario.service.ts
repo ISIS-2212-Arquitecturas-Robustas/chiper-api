@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ProductoClientMock } from '../clients/producto.client.mock';
+import { ProductoService } from '../../logistica/services/producto.service';
 import { TiendaClientMock } from '../clients/tienda.client.mock';
 import {
   CreateItemInventarioDto,
@@ -18,7 +18,7 @@ import { ItemInventarioRepository } from '../repositories/item-inventario.reposi
 export class ItemInventarioService {
   constructor(
     private readonly itemRepository: ItemInventarioRepository,
-    private readonly productoClient: ProductoClientMock,
+    private readonly productoService: ProductoService,
     private readonly tiendaClient: TiendaClientMock,
   ) {}
 
@@ -26,7 +26,7 @@ export class ItemInventarioService {
     dto: CreateItemInventarioDto,
   ): Promise<ItemInventarioResponseDto> {
     // Validar que producto y tienda existan
-    const productoExists = await this.productoClient.exists(dto.productoId);
+    const productoExists = await this.productoService.exists(dto.productoId);
     if (!productoExists) {
       throw new BadRequestException(
         `Producto con id ${dto.productoId} no existe`,

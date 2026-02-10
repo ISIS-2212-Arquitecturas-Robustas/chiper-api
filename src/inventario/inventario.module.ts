@@ -2,32 +2,33 @@ import { Module } from '@nestjs/common';
 
 // Repositories (Data Layer)
 import {
-  ItemInventarioRepository,
-  RegistroCompraRepository,
-  RegistroVentaRepository,
+    ItemInventarioRepository,
+    RegistroCompraRepository,
+    RegistroVentaRepository,
 } from './repositories';
 
 // Services
 import {
-  ItemInventarioService,
-  RegistroCompraService,
-  RegistroVentaService,
+    ItemInventarioService,
+    RegistroCompraService,
+    RegistroVentaService,
 } from './services';
 
 // Controllers
 import {
-  ItemInventarioController,
-  RegistroCompraController,
-  RegistroVentaController,
+    ItemInventarioController,
+    RegistroCompraController,
+    RegistroVentaController,
 } from './controllers';
 
 // Clients Mock
 import { DatabaseModule } from '../datasources/database.module';
-import { ProductoClientMock, TiendaClientMock } from './clients';
+import { LogisticaModule } from '../logistica/logistica.module';
+import { TiendaClientMock } from './clients';
 import { repositoryProviders } from './repositories/repository.providers';
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, LogisticaModule],
   controllers: [
     ItemInventarioController,
     RegistroVentaController,
@@ -44,7 +45,6 @@ import { repositoryProviders } from './repositories/repository.providers';
     RegistroVentaService,
     RegistroCompraService,
     // Mock Clients
-    ProductoClientMock,
     TiendaClientMock,
   ],
   exports: [ItemInventarioService, RegistroVentaService, RegistroCompraService],
