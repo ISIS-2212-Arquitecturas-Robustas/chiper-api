@@ -13,9 +13,11 @@ export const databaseProviders = [
         database: process.env.DB_NAME || 'chiper',
         entities: [__dirname + '/../**/*.entity{.ts,.js}'],
         synchronize: true,
+        logging: false,
       });
 
       return dataSource.initialize();
     },
   },
 ];
+

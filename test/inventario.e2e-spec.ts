@@ -35,12 +35,14 @@ describe('Inventario (e2e)', () => {
 
   afterAll(async () => {
     // Clean up test data
-    if (testProductoId) {
+    if (app && testProductoId) {
       await request(app.getHttpServer())
         .delete(`/logistics/productos/${testProductoId}`)
-        .expect(200);
+        .catch(() => {}); // Ignore errors during cleanup
     }
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
   describe('Item Inventario', () => {

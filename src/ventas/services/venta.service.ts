@@ -171,7 +171,7 @@ export class VentaService {
       fechaHora: venta.fechaHora,
       total: parseFloat(venta.total.toString()),
       monedaId: venta.monedaId,
-      items: venta.items.map((item) => this.mapItemToResponse(item)),
+      items: (venta.items || []).map((item) => this.mapItemToResponse(item)),
       createdAt: venta.createdAt,
       updatedAt: venta.updatedAt,
     };

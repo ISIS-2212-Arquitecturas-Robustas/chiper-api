@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
+import { ItemVenta } from './entities';
 import { Venta } from './entities/venta.entity';
 
 export interface QueryVentaDto {
@@ -71,11 +72,27 @@ export class VentaRepository {
     const venta = await this.findById(id);
     if (!venta) return null;
 
+    // If updating items, handle them properly
+    if (updates.items) {
+      // Delete old items directly from database to avoid FK constraint issues
+      if (venta.items && venta.items.length > 0) {
+        await this.repository.manager.delete(ItemVenta, { ventaId: id });
+      }
+
+      // Set ventaId for all new items
+      updates.items.forEach((item: ItemVenta) => {
+        item.ventaId = id;
+      });
+    }
+
     // Merge updates into the existing entity
     Object.assign(venta, updates);
 
     // Save will cascade to items due to cascade: true
-    return this.repository.save(venta);
+    const saved = await this.repository.save(venta);
+
+    // Reload to get fresh relations
+    return this.findById(saved.id);
   }
 
   async delete(id: string): Promise<boolean> {

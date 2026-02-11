@@ -126,7 +126,7 @@ describe('ProductoExternoRepository', () => {
       );
     });
 
-    it('should filter by nombre with ILIKE', async () => {
+    it('should filter by nombre with LIKE', async () => {
       const query: QueryProductoExternoDto = { nombre: 'Coca' };
       const queryBuilder = {
         andWhere: jest.fn().mockReturnThis(),
@@ -138,7 +138,7 @@ describe('ProductoExternoRepository', () => {
       await repository.findAll(query);
 
       expect(queryBuilder.andWhere).toHaveBeenCalledWith(
-        'productoExterno.nombre ILIKE :nombre',
+        'productoExterno.nombre LIKE :nombre',
         { nombre: '%Coca%' },
       );
     });

@@ -43,7 +43,7 @@ export class ProductoExternoRepository {
     }
 
     if (query.nombre) {
-      queryBuilder.andWhere('productoExterno.nombre ILIKE :nombre', {
+      queryBuilder.andWhere('productoExterno.nombre LIKE :nombre', {
         nombre: `%${query.nombre}%`,
       });
     }

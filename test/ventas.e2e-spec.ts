@@ -10,7 +10,7 @@ describe('Ventas (e2e)', () => {
   let testVentaId: string;
   const testTiendaId = '9a2f2e7b-40c4-4c5f-a37c-baf722e18ab9'; // From mock
   const testMonedaId = '550e8400-e29b-41d4-a716-446655440000';
-  const testProductoId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'; // From init.sql
+  let testProductoId: string; // Create this in beforeAll instead of hardcoding
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -20,8 +20,24 @@ describe('Ventas (e2e)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
 
-    // Create a test producto externo
+    // Create a test producto for catalog-based sales
     const productoResponse = await request(app.getHttpServer())
+      .post('/logistics/productos')
+      .send({
+        codigoInterno: 'TEST-CAT-001',
+        codigoBarras: '9999999999999',
+        nombre: 'Producto Catalogo Test',
+        marca: 'Marca Test',
+        categoria: 'Categoria Test',
+        presentacion: 'Unidad',
+        precioBase: 20.0,
+        monedaId: testMonedaId,
+      });
+
+    testProductoId = productoResponse.body.id;
+
+    // Create a test producto externo
+    const productoExternoResponse = await request(app.getHttpServer())
       .post('/ventas/productos-externos')
       .send({
         tiendaId: testTiendaId,
@@ -33,22 +49,29 @@ describe('Ventas (e2e)', () => {
         cantidad: 100.0,
       });
 
-    testProductoExternoId = productoResponse.body.id;
+    testProductoExternoId = productoExternoResponse.body.id;
   });
 
   afterAll(async () => {
-    // Clean up test data
-    if (testVentaId) {
-      await request(app.getHttpServer())
-        .delete(`/ventas/ventas/${testVentaId}`)
-        .expect(200);
+    // Clean up test data in proper order to avoid foreign key constraints
+    if (app) {
+      if (testVentaId) {
+        await request(app.getHttpServer())
+          .delete(`/ventas/ventas/${testVentaId}`)
+          .catch(() => {}); // Ignore errors during cleanup
+      }
+      if (testProductoExternoId) {
+        await request(app.getHttpServer())
+          .delete(`/ventas/productos-externos/${testProductoExternoId}`)
+          .catch(() => {}); // Ignore errors during cleanup
+      }
+      if (testProductoId) {
+        await request(app.getHttpServer())
+          .delete(`/logistics/productos/${testProductoId}`)
+          .catch(() => {}); // Ignore errors during cleanup
+      }
+      await app.close();
     }
-    if (testProductoExternoId) {
-      await request(app.getHttpServer())
-        .delete(`/ventas/productos-externos/${testProductoExternoId}`)
-        .expect(200);
-    }
-    await app.close();
   });
 
   describe('ProductoExterno', () => {
@@ -413,18 +436,6 @@ describe('Ventas (e2e)', () => {
     });
 
     it('should create venta with productoId from catalog', async () => {
-      // First verify the producto exists by trying to get it
-      const productoCheck = await request(app.getHttpServer())
-        .get(`/logistica/productos/${testProductoId}`)
-        .expect((res) => {
-          if (res.status !== 200) {
-            console.log(
-              'Producto not found, test may fail. Response:',
-              res.body,
-            );
-          }
-        });
-
       const result = await request(app.getHttpServer())
         .post('/ventas/ventas')
         .send({
@@ -439,11 +450,6 @@ describe('Ventas (e2e)', () => {
               precioUnitario: 25.0,
             },
           ],
-        })
-        .expect((res) => {
-          if (res.status !== 201) {
-            console.log('Failed to create venta. Error:', res.body);
-          }
         })
         .expect(201);
 

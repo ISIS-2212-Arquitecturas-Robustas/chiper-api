@@ -56,8 +56,10 @@ export class PromocionService {
     return {
       id: promocion.id,
       nombre: promocion.nombre,
-      precioPromocional: promocion.precioPromocional,
+      precioPromocional: parseFloat(promocion.precioPromocional.toString()),
       monedaId: promocion.monedaId,
+      productoId: promocion.productoId,
+      tiendaIds: promocion.tiendaIds,
       inicio: promocion.inicio,
       fin: promocion.fin,
       restricciones: promocion.restricciones,
