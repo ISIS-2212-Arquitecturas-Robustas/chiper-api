@@ -1,9 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-    CreatePedidoDto,
-    QueryPedidoDto,
-    UpdatePedidoDto,
+  CreatePedidoDto,
+  PedidoResponseDto,
+  QueryPedidoDto,
+  UpdatePedidoDto,
 } from '../dtos';
+import { EstadoPedido } from '../repositories/entities';
 import { PedidoService } from '../services';
 import { PedidoController } from './pedido.controller';
 
@@ -46,7 +48,7 @@ describe('PedidoController', () => {
         fechaHoraCreacion: new Date(),
         montoTotal: 1000,
         monedaId: 'usd-1',
-        estado: 'PENDIENTE',
+        estado: EstadoPedido.CREADO,
         items: [
           {
             productoId: 'prod-1',
@@ -57,7 +59,8 @@ describe('PedidoController', () => {
           },
         ],
       };
-      const response = {
+
+      const response: PedidoResponseDto = {
         id: 'ped-1',
         ...dto,
         createdAt: new Date(),
@@ -84,7 +87,7 @@ describe('PedidoController', () => {
           fechaHoraCreacion: new Date(),
           montoTotal: 1000,
           monedaId: 'usd-1',
-          estado: 'PENDIENTE',
+          estado: EstadoPedido.APROBADO,
           items: [],
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -102,14 +105,14 @@ describe('PedidoController', () => {
 
   describe('findById', () => {
     it('should call service.findById with id', async () => {
-      const response = {
+      const response: PedidoResponseDto = {
         id: 'ped-1',
         identificador: 'PED-001',
         tiendaId: 'tienda-1',
         fechaHoraCreacion: new Date(),
         montoTotal: 1000,
         monedaId: 'usd-1',
-        estado: 'PENDIENTE',
+        estado: EstadoPedido.ALISTADO,
         items: [],
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -126,15 +129,15 @@ describe('PedidoController', () => {
 
   describe('update', () => {
     it('should call service.update with id and dto', async () => {
-      const dto: UpdatePedidoDto = { estado: 'COMPLETADO' };
-      const response = {
+      const dto: UpdatePedidoDto = { estado: EstadoPedido.DESPACHADO };
+      const response: PedidoResponseDto = {
         id: 'ped-1',
         identificador: 'PED-001',
         tiendaId: 'tienda-1',
         fechaHoraCreacion: new Date(),
         montoTotal: 1000,
         monedaId: 'usd-1',
-        estado: 'COMPLETADO',
+        estado: EstadoPedido.DESPACHADO,
         items: [],
         createdAt: new Date(),
         updatedAt: new Date(),

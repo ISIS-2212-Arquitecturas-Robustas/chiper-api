@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-    CreatePromocionDto,
-    QueryPromocionDto,
-    UpdatePromocionDto,
+  CreatePromocionDto,
+  QueryPromocionDto,
+  UpdatePromocionDto,
 } from '../dtos';
 import { PromocionService } from '../services';
 import { PromocionController } from './promocion.controller';
@@ -41,12 +41,12 @@ describe('PromocionController', () => {
   describe('create', () => {
     it('should call service.create with dto', async () => {
       const dto: CreatePromocionDto = {
-        catalogoId: 'cat-1',
-        productoId: 'prod-1',
-        descripcion: 'Promoción de descuento',
-        descuentoPorcentaje: 10,
-        montoDescuento: 0,
+        nombre: 'Promo 10% OFF',
+        precioPromocional: 90,
         monedaId: 'usd-1',
+        inicio: new Date(),
+        fin: new Date(),
+        restricciones: 2,
       };
       const response = {
         id: 'promo-1',
@@ -70,12 +70,12 @@ describe('PromocionController', () => {
       const response = [
         {
           id: 'promo-1',
-          catalogoId: 'cat-1',
-          productoId: 'prod-1',
-          descripcion: 'Promoción',
-          descuentoPorcentaje: 10,
-          montoDescuento: 0,
+          nombre: 'Promo 10% OFF',
+          precioPromocional: 90,
           monedaId: 'usd-1',
+          inicio: new Date(),
+          fin: new Date(),
+          restricciones: 2,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -94,12 +94,12 @@ describe('PromocionController', () => {
     it('should call service.findById with id', async () => {
       const response = {
         id: 'promo-1',
-        catalogoId: 'cat-1',
-        productoId: 'prod-1',
-        descripcion: 'Promoción',
-        descuentoPorcentaje: 10,
-        montoDescuento: 0,
+        nombre: 'Promo 10% OFF',
+        precioPromocional: 90,
         monedaId: 'usd-1',
+        inicio: new Date(),
+        fin: new Date(),
+        restricciones: 2,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -115,15 +115,15 @@ describe('PromocionController', () => {
 
   describe('update', () => {
     it('should call service.update with id and dto', async () => {
-      const dto: UpdatePromocionDto = { descripcion: 'Actualizada' };
+      const dto: UpdatePromocionDto = { nombre: 'Actualizada' };
       const response = {
         id: 'promo-1',
-        catalogoId: 'cat-1',
-        productoId: 'prod-1',
-        descripcion: 'Actualizada',
-        descuentoPorcentaje: 10,
-        montoDescuento: 0,
+        nombre: 'Actualizada',
+        precioPromocional: 90,
         monedaId: 'usd-1',
+        inicio: new Date(),
+        fin: new Date(),
+        restricciones: 2,
         createdAt: new Date(),
         updatedAt: new Date(),
       };

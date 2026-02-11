@@ -1,9 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-    CreateDisponibilidadZonaDto,
-    QueryDisponibilidadZonaDto,
-    UpdateDisponibilidadZonaDto,
+  CreateDisponibilidadZonaDto,
+  QueryDisponibilidadZonaDto,
+  UpdateDisponibilidadZonaDto,
 } from '../dtos';
+import {
+  Catalogo,
+  DisponibilidadZona,
+  Producto,
+} from '../repositories/entities';
 import { DisponibilidadZonaService } from '../services';
 import { DisponibilidadZonaController } from './disponibilidad-zona.controller';
 
@@ -30,7 +35,9 @@ describe('DisponibilidadZonaController', () => {
       ],
     }).compile();
 
-    controller = module.get<DisponibilidadZonaController>(DisponibilidadZonaController);
+    controller = module.get<DisponibilidadZonaController>(
+      DisponibilidadZonaController,
+    );
     service = module.get(DisponibilidadZonaService);
   });
 
@@ -41,16 +48,16 @@ describe('DisponibilidadZonaController', () => {
   describe('create', () => {
     it('should call service.create with dto', async () => {
       const dto: CreateDisponibilidadZonaDto = {
-        zona: 'ZONA_NORTE',
-        esDisponible: true,
-        horaInicio: '08:00',
-        horaFin: '20:00',
+        catalogoId: 'cat-1',
+        productoId: 'prod-1',
+        cantidadDisponible: 100,
       };
       const response = {
         id: 'dz-1',
         ...dto,
         createdAt: new Date(),
         updatedAt: new Date(),
+        ultimaActualizacion: new Date(),
       };
 
       service.create.mockResolvedValue(response);
@@ -65,15 +72,17 @@ describe('DisponibilidadZonaController', () => {
   describe('findAll', () => {
     it('should call service.findAll', async () => {
       const query: QueryDisponibilidadZonaDto = {};
-      const response = [
+      const response: DisponibilidadZona[] = [
         {
           id: 'dz-1',
-          zona: 'ZONA_NORTE',
-          esDisponible: true,
-          horaInicio: '08:00',
-          horaFin: '20:00',
           createdAt: new Date(),
           updatedAt: new Date(),
+          ultimaActualizacion: new Date(),
+          cantidadDisponible: 100,
+          catalogoId: 'cat-1',
+          catalogo: new Catalogo(),
+          productoId: 'prod-1',
+          producto: new Producto(),
         },
       ];
 
@@ -90,12 +99,14 @@ describe('DisponibilidadZonaController', () => {
     it('should call service.findById with id', async () => {
       const response = {
         id: 'dz-1',
-        zona: 'ZONA_NORTE',
-        esDisponible: true,
-        horaInicio: '08:00',
-        horaFin: '20:00',
         createdAt: new Date(),
         updatedAt: new Date(),
+        ultimaActualizacion: new Date(),
+        cantidadDisponible: 100,
+        catalogoId: 'cat-1',
+        catalogo: new Catalogo(),
+        productoId: 'prod-1',
+        producto: new Producto(),
       };
 
       service.findById.mockResolvedValue(response);
@@ -109,15 +120,17 @@ describe('DisponibilidadZonaController', () => {
 
   describe('update', () => {
     it('should call service.update with id and dto', async () => {
-      const dto: UpdateDisponibilidadZonaDto = { esDisponible: false };
+      const dto: UpdateDisponibilidadZonaDto = {};
       const response = {
         id: 'dz-1',
-        zona: 'ZONA_NORTE',
-        esDisponible: false,
-        horaInicio: '08:00',
-        horaFin: '20:00',
         createdAt: new Date(),
         updatedAt: new Date(),
+        ultimaActualizacion: new Date(),
+        cantidadDisponible: 100,
+        catalogoId: 'cat-1',
+        catalogo: new Catalogo(),
+        productoId: 'prod-1',
+        producto: new Producto(),
       };
 
       service.update.mockResolvedValue(response);

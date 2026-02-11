@@ -1,14 +1,14 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-    CreateDisponibilidadZonaDto,
-    QueryDisponibilidadZonaDto,
-    UpdateDisponibilidadZonaDto,
+  CreateDisponibilidadZonaDto,
+  QueryDisponibilidadZonaDto,
+  UpdateDisponibilidadZonaDto,
 } from '../dtos';
 import {
-    CatalogoRepository,
-    DisponibilidadZonaRepository,
-    ProductoRepository,
+  CatalogoRepository,
+  DisponibilidadZonaRepository,
+  ProductoRepository,
 } from '../repositories';
 import { DisponibilidadZonaService } from './disponibilidad-zona.service';
 
@@ -85,16 +85,18 @@ describe('DisponibilidadZonaService', () => {
 
       catalogoRepository.findById.mockResolvedValue(catalogo as any);
       productoRepository.findById.mockResolvedValue(producto as any);
-      (repository as any).findByCatalogoAndProducto.mockResolvedValue(null);
+      repository.findByCatalogoAndProducto.mockResolvedValue(null);
       repository.create.mockResolvedValue(entity as any);
 
       const result = await service.create(dto);
 
       expect(catalogoRepository.findById).toHaveBeenCalledWith('cat-1');
       expect(productoRepository.findById).toHaveBeenCalledWith('prod-1');
-      expect(result).toEqual(expect.objectContaining({
-        id: 'dz-1',
-      }));
+      expect(result).toEqual(
+        expect.objectContaining({
+          id: 'dz-1',
+        }),
+      );
     });
 
     it('should throw BadRequestException when catalogo not found', async () => {

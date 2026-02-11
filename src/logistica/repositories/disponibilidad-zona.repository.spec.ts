@@ -28,7 +28,9 @@ describe('DisponibilidadZonaRepository', () => {
       ],
     }).compile();
 
-    repository = module.get<DisponibilidadZonaRepository>(DisponibilidadZonaRepository);
+    repository = module.get<DisponibilidadZonaRepository>(
+      DisponibilidadZonaRepository,
+    );
     typeormRepo = module.get('DISPONIBILIDAD_ZONA_REPOSITORY');
   });
 
@@ -78,7 +80,9 @@ describe('DisponibilidadZonaRepository', () => {
 
       const result = await repository.findAll(query);
 
-      expect(typeormRepo.createQueryBuilder).toHaveBeenCalledWith('disponibilidadZona');
+      expect(typeormRepo.createQueryBuilder).toHaveBeenCalledWith(
+        'disponibilidadZona',
+      );
       expect(result).toEqual(items);
     });
   });
@@ -98,7 +102,9 @@ describe('DisponibilidadZonaRepository', () => {
 
       const result = await repository.findById('dz-1');
 
-      expect(typeormRepo.findOne).toHaveBeenCalledWith({ where: { id: 'dz-1' } });
+      expect(typeormRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 'dz-1' },
+      });
       expect(result).toEqual(item);
     });
 
@@ -134,7 +140,9 @@ describe('DisponibilidadZonaRepository', () => {
         ...updates,
         ultimaActualizacion: expect.any(Date),
       });
-      expect(typeormRepo.findOne).toHaveBeenCalledWith({ where: { id: 'dz-1' } });
+      expect(typeormRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 'dz-1' },
+      });
       expect(result).toEqual(updated);
     });
   });

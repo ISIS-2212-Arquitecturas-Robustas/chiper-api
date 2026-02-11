@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-    CreateDespachoDto,
-    QueryDespachoDto,
-    UpdateDespachoDto,
+  CreateDespachoDto,
+  QueryDespachoDto,
+  UpdateDespachoDto,
 } from '../dtos';
 import { DespachoService } from '../services';
 import { DespachoController } from './despacho.controller';

@@ -1,9 +1,9 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-    CreatePromocionDto,
-    QueryPromocionDto,
-    UpdatePromocionDto,
+  CreatePromocionDto,
+  QueryPromocionDto,
+  UpdatePromocionDto,
 } from '../dtos';
 import { PromocionRepository } from '../repositories';
 import { PromocionService } from './promocion.service';
@@ -47,7 +47,7 @@ describe('PromocionService', () => {
         monedaId: 'usd-1',
         inicio: new Date(),
         fin: new Date(),
-        restricciones: 'Sin restricciones',
+        restricciones: 2,
       };
       const entity = {
         id: 'promo-1',
@@ -61,10 +61,12 @@ describe('PromocionService', () => {
       const result = await service.create(dto);
 
       expect(repository.create).toHaveBeenCalledWith(dto);
-      expect(result).toEqual(expect.objectContaining({
-        id: 'promo-1',
-        nombre: 'Promoción de descuento',
-      }));
+      expect(result).toEqual(
+        expect.objectContaining({
+          id: 'promo-1',
+          nombre: 'Promoción de descuento',
+        }),
+      );
     });
   });
 
@@ -194,7 +196,7 @@ describe('PromocionService', () => {
       };
 
       repository.findById.mockResolvedValue(entity as any);
-      repository.delete.mockResolvedValue(undefined);
+      repository.delete.mockResolvedValue(true);
 
       await service.delete('promo-1');
 

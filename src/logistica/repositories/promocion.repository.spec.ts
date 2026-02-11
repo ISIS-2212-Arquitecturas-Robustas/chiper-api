@@ -39,11 +39,11 @@ describe('PromocionRepository', () => {
     it('should create and save promocion', async () => {
       const data = {
         nombre: 'Promocion Test',
-        precioPromocional: 100.50,
+        precioPromocional: 100.5,
         monedaId: 'moneda-1',
         inicio: new Date(),
         fin: new Date(),
-        restricciones: 'Some restrictions',
+        restricciones: 2,
       };
       const created = { id: 'prom-1', ...data };
       const saved = {
@@ -101,7 +101,7 @@ describe('PromocionRepository', () => {
       const item = {
         id: 'prom-1',
         nombre: 'Promocion Test',
-        precioPromocional: 100.50,
+        precioPromocional: 100.5,
         monedaId: 'moneda-1',
         inicio: new Date(),
         fin: new Date(),
@@ -114,7 +114,9 @@ describe('PromocionRepository', () => {
 
       const result = await repository.findById('prom-1');
 
-      expect(typeormRepo.findOne).toHaveBeenCalledWith({ where: { id: 'prom-1' } });
+      expect(typeormRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 'prom-1' },
+      });
       expect(result).toEqual(item);
     });
 
@@ -148,7 +150,9 @@ describe('PromocionRepository', () => {
       const result = await repository.update('prom-1', updates);
 
       expect(typeormRepo.update).toHaveBeenCalledWith('prom-1', updates);
-      expect(typeormRepo.findOne).toHaveBeenCalledWith({ where: { id: 'prom-1' } });
+      expect(typeormRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 'prom-1' },
+      });
       expect(result).toEqual(updated);
     });
   });

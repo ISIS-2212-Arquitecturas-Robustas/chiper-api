@@ -2,9 +2,9 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TiendaClientMock } from '../clients';
 import {
-    CreateCatalogoDto,
-    QueryCatalogoDto,
-    UpdateCatalogoDto,
+  CreateCatalogoDto,
+  QueryCatalogoDto,
+  UpdateCatalogoDto,
 } from '../dtos';
 import { CatalogoRepository } from '../repositories';
 import { CatalogoService } from './catalogo.service';

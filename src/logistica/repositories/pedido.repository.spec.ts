@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
 import { QueryPedidoDto } from '../dtos';
-import { Pedido } from './entities';
+import { EstadoPedido, Pedido } from './entities';
 import { PedidoRepository } from './pedido.repository';
 
 describe('PedidoRepository', () => {
@@ -40,7 +40,7 @@ describe('PedidoRepository', () => {
     it('should create and save pedido', async () => {
       const pedidoData = {
         tiendaId: 'tienda-1',
-        estado: 'PENDIENTE',
+        estado: EstadoPedido.APROBADO,
         monedaId: 'usd-id',
       };
       const createdPedido = { id: 'pedido-1', ...pedidoData };
@@ -85,7 +85,7 @@ describe('PedidoRepository', () => {
       const pedido = {
         id: 'pedido-1',
         tiendaId: 'tienda-1',
-        estado: 'PENDIENTE',
+        estado: EstadoPedido.CREADO,
         monedaId: 'usd-id',
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -113,11 +113,11 @@ describe('PedidoRepository', () => {
 
   describe('update', () => {
     it('should update and return updated pedido', async () => {
-      const updates = { estado: 'ENTREGADO' };
+      const updates = { estado: EstadoPedido.DESPACHADO };
       const updatedPedido = {
         id: 'pedido-1',
         tiendaId: 'tienda-1',
-        estado: 'ENTREGADO',
+        estado: EstadoPedido.DESPACHADO,
         monedaId: 'usd-id',
         createdAt: new Date(),
         updatedAt: new Date(),

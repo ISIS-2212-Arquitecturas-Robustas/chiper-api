@@ -1,12 +1,9 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TiendaClientMock } from '../clients';
-import {
-    CreatePedidoDto,
-    QueryPedidoDto,
-    UpdatePedidoDto,
-} from '../dtos';
+import { CreatePedidoDto, QueryPedidoDto, UpdatePedidoDto } from '../dtos';
 import { PedidoRepository, ProductoRepository } from '../repositories';
+import { EstadoPedido } from '../repositories/entities';
 import { PedidoService } from './pedido.service';
 
 describe('PedidoService', () => {
@@ -68,7 +65,7 @@ describe('PedidoService', () => {
         fechaHoraCreacion: new Date(),
         montoTotal: 1000,
         monedaId: 'usd-1',
-        estado: 'PENDIENTE',
+        estado: EstadoPedido.CREADO,
         items: [
           {
             productoId: 'prod-1',
@@ -96,11 +93,13 @@ describe('PedidoService', () => {
       expect(tiendaClient.exists).toHaveBeenCalledWith('tienda-1');
       expect(productoRepository.findById).toHaveBeenCalledWith('prod-1');
       expect(repository.create).toHaveBeenCalled();
-      expect(result).toEqual(expect.objectContaining({
-        id: 'ped-1',
-        identificador: 'PED-001',
-        tiendaId: 'tienda-1',
-      }));
+      expect(result).toEqual(
+        expect.objectContaining({
+          id: 'ped-1',
+          identificador: 'PED-001',
+          tiendaId: 'tienda-1',
+        }),
+      );
     });
 
     it('should throw BadRequestException when tienda does not exist', async () => {
@@ -110,7 +109,7 @@ describe('PedidoService', () => {
         fechaHoraCreacion: new Date(),
         montoTotal: 1000,
         monedaId: 'usd-1',
-        estado: 'PENDIENTE',
+        estado: EstadoPedido.CREADO,
         items: [],
       };
 
@@ -126,7 +125,7 @@ describe('PedidoService', () => {
         fechaHoraCreacion: new Date(),
         montoTotal: 1000,
         monedaId: 'usd-1',
-        estado: 'PENDIENTE',
+        estado: EstadoPedido.CREADO,
         items: [
           {
             productoId: 'non-existent',
@@ -156,7 +155,7 @@ describe('PedidoService', () => {
           fechaHoraCreacion: new Date(),
           montoTotal: 1000,
           monedaId: 'usd-1',
-          estado: 'PENDIENTE',
+          estado: EstadoPedido.CREADO,
           items: [],
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -181,7 +180,7 @@ describe('PedidoService', () => {
         fechaHoraCreacion: new Date(),
         montoTotal: 1000,
         monedaId: 'usd-1',
-        estado: 'PENDIENTE',
+        estado: EstadoPedido.CREADO,
         items: [],
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -205,7 +204,7 @@ describe('PedidoService', () => {
 
   describe('update', () => {
     it('should update and return pedido', async () => {
-      const dto: UpdatePedidoDto = { estado: 'COMPLETADO' };
+      const dto: UpdatePedidoDto = { estado: EstadoPedido.DESPACHADO };
       const entity = {
         id: 'ped-1',
         identificador: 'PED-001',
@@ -213,19 +212,19 @@ describe('PedidoService', () => {
         fechaHoraCreacion: new Date(),
         montoTotal: 1000,
         monedaId: 'usd-1',
-        estado: 'PENDIENTE',
+        estado: EstadoPedido.CREADO,
         items: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      const updated = { ...entity, estado: 'COMPLETADO' };
+      const updated = { ...entity, estado: EstadoPedido.DESPACHADO };
 
       repository.findById.mockResolvedValue(entity as any);
       repository.update.mockResolvedValue(updated as any);
 
       const result = await service.update('ped-1', dto);
 
-      expect(result.estado).toBe('COMPLETADO');
+      expect(result.estado).toBe(EstadoPedido.DESPACHADO);
     });
 
     it('should throw NotFoundException when pedido not found', async () => {
@@ -246,7 +245,7 @@ describe('PedidoService', () => {
         fechaHoraCreacion: new Date(),
         montoTotal: 1000,
         monedaId: 'usd-1',
-        estado: 'PENDIENTE',
+        estado: EstadoPedido.CREADO,
         items: [],
         createdAt: new Date(),
         updatedAt: new Date(),

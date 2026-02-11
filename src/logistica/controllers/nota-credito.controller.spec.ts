@@ -1,9 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-    CreateNotaCreditoDto,
-    QueryNotaCreditoDto,
-    UpdateNotaCreditoDto,
+  CreateNotaCreditoDto,
+  QueryNotaCreditoDto,
+  UpdateNotaCreditoDto,
 } from '../dtos';
+import { MotivoNotaCredito } from '../repositories/entities';
 import { NotaCreditoService } from '../services';
 import { NotaCreditoController } from './nota-credito.controller';
 
@@ -42,9 +43,11 @@ describe('NotaCreditoController', () => {
     it('should call service.create with dto', async () => {
       const dto: CreateNotaCreditoDto = {
         pedidoId: 'ped-1',
-        motivo: 'Producto defectuoso',
-        montoAjuste: 100,
+        motivo: MotivoNotaCredito.PRODUCTO_EQUIVOCADO,
+        monto: 100,
         monedaId: 'usd-1',
+        numeroDocumento: 'NC-001',
+        fecha: new Date(),
       };
       const response = {
         id: 'nc-1',
@@ -69,9 +72,11 @@ describe('NotaCreditoController', () => {
         {
           id: 'nc-1',
           pedidoId: 'ped-1',
-          motivo: 'Producto defectuoso',
-          montoAjuste: 100,
+          motivo: MotivoNotaCredito.PRODUCTO_EQUIVOCADO,
+          monto: 100,
           monedaId: 'usd-1',
+          numeroDocumento: 'NC-001',
+          fecha: new Date(),
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -91,9 +96,11 @@ describe('NotaCreditoController', () => {
       const response = {
         id: 'nc-1',
         pedidoId: 'ped-1',
-        motivo: 'Producto defectuoso',
-        montoAjuste: 100,
+        motivo: MotivoNotaCredito.PRODUCTO_EQUIVOCADO,
+        monto: 100,
         monedaId: 'usd-1',
+        numeroDocumento: 'NC-001',
+        fecha: new Date(),
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -109,13 +116,17 @@ describe('NotaCreditoController', () => {
 
   describe('update', () => {
     it('should call service.update with id and dto', async () => {
-      const dto: UpdateNotaCreditoDto = { motivo: 'Actualizado' };
+      const dto: UpdateNotaCreditoDto = {
+        motivo: MotivoNotaCredito.PRODUCTO_EQUIVOCADO,
+      };
       const response = {
         id: 'nc-1',
         pedidoId: 'ped-1',
-        motivo: 'Actualizado',
-        montoAjuste: 100,
+        motivo: MotivoNotaCredito.PRODUCTO_EQUIVOCADO,
+        monto: 100,
         monedaId: 'usd-1',
+        numeroDocumento: 'NC-001',
+        fecha: new Date(),
         createdAt: new Date(),
         updatedAt: new Date(),
       };

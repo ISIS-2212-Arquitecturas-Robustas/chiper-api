@@ -1,11 +1,12 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-    CreateNotaCreditoDto,
-    QueryNotaCreditoDto,
-    UpdateNotaCreditoDto,
+  CreateNotaCreditoDto,
+  QueryNotaCreditoDto,
+  UpdateNotaCreditoDto,
 } from '../dtos';
 import { NotaCreditoRepository, PedidoRepository } from '../repositories';
+import { MotivoNotaCredito } from '../repositories/entities';
 import { NotaCreditoService } from './nota-credito.service';
 
 describe('NotaCreditoService', () => {
@@ -53,9 +54,11 @@ describe('NotaCreditoService', () => {
     it('should create nota credito when pedido exists', async () => {
       const dto: CreateNotaCreditoDto = {
         pedidoId: 'pedido-1',
-        motivo: 'Producto defectuoso',
-        montoAjuste: 100,
+        motivo: MotivoNotaCredito.PRODUCTO_EQUIVOCADO,
+        monto: 100,
         monedaId: 'usd-1',
+        numeroDocumento: 'NC-001',
+        fecha: new Date(),
       };
       const pedido = { id: 'pedido-1' };
       const entity = {
@@ -71,18 +74,22 @@ describe('NotaCreditoService', () => {
       const result = await service.create(dto);
 
       expect(pedidoRepository.findById).toHaveBeenCalledWith('pedido-1');
-      expect(result).toEqual(expect.objectContaining({
-        id: 'nc-1',
-        pedidoId: 'pedido-1',
-      }));
+      expect(result).toEqual(
+        expect.objectContaining({
+          id: 'nc-1',
+          pedidoId: 'pedido-1',
+        }),
+      );
     });
 
     it('should throw BadRequestException when pedido does not exist', async () => {
       const dto: CreateNotaCreditoDto = {
         pedidoId: 'non-existent',
-        motivo: 'Producto defectuoso',
-        montoAjuste: 100,
+        motivo: MotivoNotaCredito.PRODUCTO_EQUIVOCADO,
+        monto: 100,
         monedaId: 'usd-1',
+        numeroDocumento: 'NC-002',
+        fecha: new Date(),
       };
 
       pedidoRepository.findById.mockResolvedValue(null);
@@ -144,24 +151,31 @@ describe('NotaCreditoService', () => {
 
   describe('update', () => {
     it('should update nota credito', async () => {
-      const dto: UpdateNotaCreditoDto = { motivo: 'Actualizado' };
+      const dto: UpdateNotaCreditoDto = {
+        motivo: MotivoNotaCredito.PRODUCTO_EQUIVOCADO,
+      };
       const entity = {
         id: 'nc-1',
         pedidoId: 'pedido-1',
-        motivo: 'Producto defectuoso',
-        montoAjuste: 100,
+        motivo: MotivoNotaCredito.PRODUCTO_EQUIVOCADO,
+        monto: 100,
         monedaId: 'usd-1',
+        numeroDocumento: 'NC-001',
+        fecha: new Date(),
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      const updated = { ...entity, motivo: 'Actualizado' };
+      const updated = {
+        ...entity,
+        motivo: MotivoNotaCredito.PRODUCTO_EQUIVOCADO,
+      };
 
       repository.findById.mockResolvedValue(entity as any);
       repository.update.mockResolvedValue(updated as any);
 
       const result = await service.update('nc-1', dto);
 
-      expect(result.motivo).toBe('Actualizado');
+      expect(result.motivo).toBe(MotivoNotaCredito.PRODUCTO_EQUIVOCADO);
     });
   });
 
@@ -170,8 +184,8 @@ describe('NotaCreditoService', () => {
       const entity = {
         id: 'nc-1',
         pedidoId: 'pedido-1',
-        motivo: 'Producto defectuoso',
-        montoAjuste: 100,
+        motivo: MotivoNotaCredito.PRODUCTO_EQUIVOCADO,
+        monto: 100,
         monedaId: 'usd-1',
         createdAt: new Date(),
         updatedAt: new Date(),

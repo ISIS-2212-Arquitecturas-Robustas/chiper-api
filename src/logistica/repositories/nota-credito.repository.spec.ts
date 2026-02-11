@@ -40,7 +40,7 @@ describe('NotaCreditoRepository', () => {
     it('should create and save nota credito', async () => {
       const data = {
         pedidoId: 'pedido-1',
-        monto: 100.50,
+        monto: 100.5,
         razon: 'Devolucion parcial',
         monedaId: 'usd-id',
       };
@@ -75,7 +75,9 @@ describe('NotaCreditoRepository', () => {
 
       const result = await repository.findAll(query);
 
-      expect(typeormRepo.createQueryBuilder).toHaveBeenCalledWith('notaCredito');
+      expect(typeormRepo.createQueryBuilder).toHaveBeenCalledWith(
+        'notaCredito',
+      );
       expect(result).toEqual(items);
     });
   });
@@ -85,7 +87,7 @@ describe('NotaCreditoRepository', () => {
       const item = {
         id: 'nc-1',
         pedidoId: 'pedido-1',
-        monto: 100.50,
+        monto: 100.5,
         razon: 'Devolucion parcial',
         monedaId: 'usd-id',
         createdAt: new Date(),
@@ -96,7 +98,9 @@ describe('NotaCreditoRepository', () => {
 
       const result = await repository.findById('nc-1');
 
-      expect(typeormRepo.findOne).toHaveBeenCalledWith({ where: { id: 'nc-1' } });
+      expect(typeormRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 'nc-1' },
+      });
       expect(result).toEqual(item);
     });
 
@@ -128,7 +132,9 @@ describe('NotaCreditoRepository', () => {
       const result = await repository.update('nc-1', updates);
 
       expect(typeormRepo.update).toHaveBeenCalledWith('nc-1', updates);
-      expect(typeormRepo.findOne).toHaveBeenCalledWith({ where: { id: 'nc-1' } });
+      expect(typeormRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 'nc-1' },
+      });
       expect(result).toEqual(updated);
     });
   });

@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
 import { QueryDespachoDto } from '../dtos';
-import { Despacho } from './entities';
 import { DespachoRepository } from './despacho.repository';
+import { Despacho } from './entities';
 
 describe('DespachoRepository', () => {
   let repository: DespachoRepository;
@@ -98,7 +98,9 @@ describe('DespachoRepository', () => {
 
       const result = await repository.findById('despacho-1');
 
-      expect(typeormRepo.findOne).toHaveBeenCalledWith({ where: { id: 'despacho-1' } });
+      expect(typeormRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 'despacho-1' },
+      });
       expect(result).toEqual(despacho);
     });
 
@@ -131,7 +133,9 @@ describe('DespachoRepository', () => {
       const result = await repository.update('despacho-1', updates);
 
       expect(typeormRepo.update).toHaveBeenCalledWith('despacho-1', updates);
-      expect(typeormRepo.findOne).toHaveBeenCalledWith({ where: { id: 'despacho-1' } });
+      expect(typeormRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 'despacho-1' },
+      });
       expect(result).toEqual(updatedDespacho);
     });
   });

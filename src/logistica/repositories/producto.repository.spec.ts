@@ -104,7 +104,9 @@ describe('ProductoRepository', () => {
 
       const result = await repository.findById('prod-1');
 
-      expect(typeormRepo.findOne).toHaveBeenCalledWith({ where: { id: 'prod-1' } });
+      expect(typeormRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 'prod-1' },
+      });
       expect(result).toEqual(producto);
     });
 
@@ -140,7 +142,9 @@ describe('ProductoRepository', () => {
       const result = await repository.update('prod-1', updates);
 
       expect(typeormRepo.update).toHaveBeenCalledWith('prod-1', updates);
-      expect(typeormRepo.findOne).toHaveBeenCalledWith({ where: { id: 'prod-1' } });
+      expect(typeormRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 'prod-1' },
+      });
       expect(result).toEqual(updatedProducto);
     });
   });

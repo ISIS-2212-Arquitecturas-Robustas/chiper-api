@@ -29,7 +29,9 @@ describe('CatalogoProductoRepository', () => {
       ],
     }).compile();
 
-    repository = module.get<CatalogoProductoRepository>(CatalogoProductoRepository);
+    repository = module.get<CatalogoProductoRepository>(
+      CatalogoProductoRepository,
+    );
     typeormRepo = module.get('CATALOGO_PRODUCTO_REPOSITORY');
   });
 
@@ -51,9 +53,15 @@ describe('CatalogoProductoRepository', () => {
       typeormRepo.create.mockReturnValue(created as any);
       typeormRepo.save.mockResolvedValue(saved as any);
 
-      const result = await repository.addProductoToCatalogo(catalogoId, productoId);
+      const result = await repository.addProductoToCatalogo(
+        catalogoId,
+        productoId,
+      );
 
-      expect(typeormRepo.create).toHaveBeenCalledWith({ catalogoId, productoId });
+      expect(typeormRepo.create).toHaveBeenCalledWith({
+        catalogoId,
+        productoId,
+      });
       expect(typeormRepo.save).toHaveBeenCalledWith(created);
       expect(result).toEqual(saved);
     });
@@ -62,12 +70,17 @@ describe('CatalogoProductoRepository', () => {
   describe('findByCatalogoId', () => {
     it('should find all productos for a catalog', async () => {
       const catalogoId = 'catalogo-1';
-      const items: CatalogoProducto[] = [{
-        id: 'cp-1',
-        catalogoId,
-        productoId: 'producto-1',
-        producto: { id: 'producto-1', nombre: 'Product 1' } as any,
-      }];
+      const items: CatalogoProducto[] = [
+        {
+          id: 'cp-1',
+          catalogoId,
+          catalogo: { id: catalogoId, tiendaId: 'tienda-1' } as any,
+          productoId: 'producto-1',
+          producto: { id: 'producto-1', nombre: 'Product 1' } as any,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
 
       typeormRepo.find.mockResolvedValue(items as any);
 
@@ -115,9 +128,15 @@ describe('CatalogoProductoRepository', () => {
 
       typeormRepo.delete.mockResolvedValue({ affected: 1 } as any);
 
-      const result = await repository.removeProductoFromCatalogo(catalogoId, productoId);
+      const result = await repository.removeProductoFromCatalogo(
+        catalogoId,
+        productoId,
+      );
 
-      expect(typeormRepo.delete).toHaveBeenCalledWith({ catalogoId, productoId });
+      expect(typeormRepo.delete).toHaveBeenCalledWith({
+        catalogoId,
+        productoId,
+      });
       expect(result).toBe(true);
     });
 
@@ -127,10 +146,12 @@ describe('CatalogoProductoRepository', () => {
 
       typeormRepo.delete.mockResolvedValue({ affected: 0 } as any);
 
-      const result = await repository.removeProductoFromCatalogo(catalogoId, productoId);
+      const result = await repository.removeProductoFromCatalogo(
+        catalogoId,
+        productoId,
+      );
 
       expect(result).toBe(false);
     });
   });
-
 });

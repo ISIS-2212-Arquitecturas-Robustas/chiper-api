@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-    CreateProductoDto,
-    QueryProductoDto,
-    UpdateProductoDto,
+  CreateProductoDto,
+  QueryProductoDto,
+  UpdateProductoDto,
 } from '../dtos';
 import { ProductoService } from '../services';
 import { ProductoController } from './producto.controller';
