@@ -2,23 +2,23 @@ import { Module } from '@nestjs/common';
 
 // Repositories (Data Layer)
 import {
-    ItemInventarioRepository,
-    RegistroCompraRepository,
-    RegistroVentaRepository,
+  ItemInventarioRepository,
+  RegistroCompraRepository,
+  RegistroVentaRepository,
 } from './repositories';
 
 // Services
 import {
-    ItemInventarioService,
-    RegistroCompraService,
-    RegistroVentaService,
+  ItemInventarioService,
+  RegistroCompraService,
+  RegistroVentaService,
 } from './services';
 
 // Controllers
 import {
-    ItemInventarioController,
-    RegistroCompraController,
-    RegistroVentaController,
+  ItemInventarioController,
+  RegistroCompraController,
+  RegistroVentaController,
 } from './controllers';
 
 // Clients Mock

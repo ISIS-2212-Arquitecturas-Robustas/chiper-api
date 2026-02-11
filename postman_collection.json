@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "Chiper API - Inventario",
-    "description": "Complete collection for testing all Chiper API inventory endpoints",
+    "name": "Chiper API - Complete Collection",
+    "description": "Complete collection for testing all Chiper API endpoints including Inventory, Logistics, and Sales",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "1"
   },
@@ -1093,6 +1093,294 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Sales (Ventas)",
+      "item": [
+        {
+          "name": "Productos Externos",
+          "item": [
+            {
+              "name": "Create Producto Externo",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tiendaId\": \"{{tienda_id}}\",\n  \"codigoBarras\": \"7501234567890\",\n  \"nombre\": \"Coca Cola 2L\",\n  \"categoria\": \"Bebidas\",\n  \"precioBase\": 25.50,\n  \"monedaId\": \"{{moneda_id}}\",\n  \"cantidad\": 100.0\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/ventas/productos-externos",
+                  "host": ["{{base_url}}"],
+                  "path": ["ventas", "productos-externos"]
+                },
+                "description": "Create a new external product"
+              },
+              "response": []
+            },
+            {
+              "name": "Get All Productos Externos",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/ventas/productos-externos",
+                  "host": ["{{base_url}}"],
+                  "path": ["ventas", "productos-externos"]
+                },
+                "description": "Get all external products (supports query parameters)"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Productos Externos with Filters",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/ventas/productos-externos?tiendaId={{tienda_id}}&categoria=Bebidas&nombre=Coca",
+                  "host": ["{{base_url}}"],
+                  "path": ["ventas", "productos-externos"],
+                  "query": [
+                    {
+                      "key": "tiendaId",
+                      "value": "{{tienda_id}}",
+                      "description": "Filter by store ID"
+                    },
+                    {
+                      "key": "categoria",
+                      "value": "Bebidas",
+                      "description": "Filter by category"
+                    },
+                    {
+                      "key": "nombre",
+                      "value": "Coca",
+                      "description": "Filter by name (partial match)"
+                    },
+                    {
+                      "key": "codigoBarras",
+                      "value": "7501234567890",
+                      "description": "Filter by barcode",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "description": "Get external products with query filters"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Producto Externo by ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/ventas/productos-externos/{{producto_externo_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["ventas", "productos-externos", "{{producto_externo_id}}"]
+                },
+                "description": "Get a specific external product by ID"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Producto Externo",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"precioBase\": 30.00,\n  \"cantidad\": 150.0\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/ventas/productos-externos/{{producto_externo_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["ventas", "productos-externos", "{{producto_externo_id}}"]
+                },
+                "description": "Update an external product (partial update)"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Producto Externo",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/ventas/productos-externos/{{producto_externo_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["ventas", "productos-externos", "{{producto_externo_id}}"]
+                },
+                "description": "Delete an external product"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Ventas",
+          "item": [
+            {
+              "name": "Create Venta",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tiendaId\": \"{{tienda_id}}\",\n  \"fechaHora\": \"2026-02-09T10:30:00.000Z\",\n  \"monedaId\": \"{{moneda_id}}\",\n  \"items\": [\n    {\n      \"productoExternoId\": \"{{producto_externo_id}}\",\n      \"cantidad\": 2,\n      \"precioUnitario\": 26.00\n    },\n    {\n      \"productoExternoId\": \"{{producto_externo_id}}\",\n      \"cantidad\": 3,\n      \"precioUnitario\": 26.00\n    }\n  ]\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/ventas/ventas",
+                  "host": ["{{base_url}}"],
+                  "path": ["ventas", "ventas"]
+                },
+                "description": "Create a new sale with items. Total is automatically calculated."
+              },
+              "response": []
+            },
+            {
+              "name": "Get All Ventas",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/ventas/ventas",
+                  "host": ["{{base_url}}"],
+                  "path": ["ventas", "ventas"]
+                },
+                "description": "Get all sales (supports query parameters)"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Ventas with Filters",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/ventas/ventas?tiendaId={{tienda_id}}&fechaDesde=2026-01-01T00:00:00.000Z&fechaHasta=2026-12-31T23:59:59.999Z",
+                  "host": ["{{base_url}}"],
+                  "path": ["ventas", "ventas"],
+                  "query": [
+                    {
+                      "key": "tiendaId",
+                      "value": "{{tienda_id}}",
+                      "description": "Filter by store ID"
+                    },
+                    {
+                      "key": "fechaDesde",
+                      "value": "2026-01-01T00:00:00.000Z",
+                      "description": "Filter by start date (inclusive)"
+                    },
+                    {
+                      "key": "fechaHasta",
+                      "value": "2026-12-31T23:59:59.999Z",
+                      "description": "Filter by end date (inclusive)"
+                    },
+                    {
+                      "key": "productoExternoId",
+                      "value": "{{producto_externo_id}}",
+                      "description": "Filter by external product ID",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "description": "Get sales with query filters"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Venta by ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/ventas/ventas/{{venta_ventas_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["ventas", "ventas", "{{venta_ventas_id}}"]
+                },
+                "description": "Get a specific sale by ID with all items"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Venta - Items",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"items\": [\n    {\n      \"productoExternoId\": \"{{producto_externo_id}}\",\n      \"cantidad\": 5,\n      \"precioUnitario\": 20.00\n    }\n  ]\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/ventas/ventas/{{venta_ventas_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["ventas", "ventas", "{{venta_ventas_id}}"]
+                },
+                "description": "Update sale items (replaces all items, recalculates total)"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Venta - Fecha",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fechaHora\": \"2026-02-10T15:00:00.000Z\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/ventas/ventas/{{venta_ventas_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["ventas", "ventas", "{{venta_ventas_id}}"]
+                },
+                "description": "Update sale date/time only (total unchanged)"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Venta",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/ventas/ventas/{{venta_ventas_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["ventas", "ventas", "{{venta_ventas_id}}"]
+                },
+                "description": "Delete a sale (cascade deletes all items)"
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
     }
   ],
   "variable": [
@@ -1169,6 +1457,16 @@
     {
       "key": "disponibilidad_zona_id",
       "value": "dis11111-1111-1111-1111-111111111111",
+      "type": "string"
+    },
+    {
+      "key": "producto_externo_id",
+      "value": "pex11111-1111-1111-1111-111111111111",
+      "type": "string"
+    },
+    {
+      "key": "venta_ventas_id",
+      "value": "ven11111-1111-1111-1111-111111111111",
       "type": "string"
     }
   ]
