@@ -400,7 +400,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{}"
+                  "raw": "{\n  \"tiendaId\": \"{{tienda_id}}\",\n  \"vigenciaDesde\": \"2026-01-01T00:00:00.000Z\",\n  \"vigenciaHasta\": \"2026-12-31T23:59:59.999Z\",\n  \"zona\": \"Zona Norte\"\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/logistics/catalogos",
@@ -451,7 +451,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{}"
+                  "raw": "{\n  \"vigenciaHasta\": \"2026-12-31T23:59:59.999Z\",\n  \"zona\": \"Zona Sur\"\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/logistics/catalogos/{{catalogo_id}}",
@@ -549,7 +549,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{}"
+                  "raw": "{\n  \"pedidoId\": \"{{pedido_id}}\",\n  \"bodega\": \"Bodega Central\",\n  \"horaSalida\": \"2026-02-11T08:00:00.000Z\",\n  \"ventanaPrometidaInicio\": \"2026-02-11T10:00:00.000Z\",\n  \"ventanaPrometidaFin\": \"2026-02-11T14:00:00.000Z\"\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/logistics/despachos",
@@ -600,7 +600,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{}"
+                  "raw": "{\n  \"ventanaPrometidaInicio\": \"2026-02-11T11:00:00.000Z\",\n  \"ventanaPrometidaFin\": \"2026-02-11T15:00:00.000Z\"\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/logistics/despachos/{{despacho_id}}",
@@ -642,7 +642,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{}"
+                  "raw": "{\n  \"catalogoId\": \"{{catalogo_id}}\",\n  \"productoId\": \"{{producto_id}}\",\n  \"cantidadDisponible\": 100\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/logistics/disponibilidad-zona",
@@ -693,7 +693,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{}"
+                  "raw": "{\n  \"cantidadDisponible\": 150\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/logistics/disponibilidad-zona/{{disponibilidad_zona_id}}",
@@ -735,7 +735,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{}"
+                  "raw": "{\n  \"pedidoId\": \"{{pedido_id}}\",\n  \"numeroDocumento\": \"NC-2026-001\",\n  \"fecha\": \"2026-02-11T10:00:00.000Z\",\n  \"motivo\": \"PRODUCTO_DEFECTUOSO\",\n  \"monto\": 50.00,\n  \"monedaId\": \"{{moneda_id}}\",\n  \"evidencia\": \"Foto del producto dañado\"\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/logistics/notas-credito",
@@ -786,7 +786,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{}"
+                  "raw": "{\n  \"monto\": 75.00,\n  \"evidencia\": \"Evidencia actualizada\"\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/logistics/notas-credito/{{nota_credito_id}}",
@@ -828,7 +828,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{}"
+                  "raw": "{\n  \"identificador\": \"PED-2026-001\",\n  \"tiendaId\": \"{{tienda_id}}\",\n  \"fechaHoraCreacion\": \"2026-02-11T10:00:00.000Z\",\n  \"montoTotal\": 150.00,\n  \"monedaId\": \"{{moneda_id}}\",\n  \"items\": [\n    {\n      \"productoId\": \"{{producto_id}}\",\n      \"cantidad\": 10,\n      \"precioUnitario\": 15.00,\n      \"descuento\": 0,\n      \"monedaId\": \"{{moneda_id}}\"\n    }\n  ]\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/logistics/pedidos",
@@ -879,7 +879,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{}"
+                  "raw": "{\n  \"estado\": \"CONFIRMADO\"\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/logistics/pedidos/{{pedido_id}}",
@@ -921,7 +921,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{}"
+                  "raw": "{\n  \"codigoInterno\": \"PROD001\",\n  \"codigoBarras\": \"7501234567890\",\n  \"nombre\": \"Coca Cola 2L\",\n  \"marca\": \"Coca Cola\",\n  \"categoria\": \"Bebidas\",\n  \"presentacion\": \"2L\",\n  \"precioBase\": 25.50,\n  \"monedaId\": \"{{moneda_id}}\"\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/logistics/productos",
@@ -972,7 +972,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{}"
+                  "raw": "{\n  \"precioBase\": 28.00,\n  \"presentacion\": \"2.5L\"\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/logistics/productos/{{producto_id}}",
@@ -1014,7 +1014,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{}"
+                  "raw": "{\n  \"nombre\": \"Descuento especial\",\n  \"precioPromocional\": 20.00,\n  \"monedaId\": \"{{moneda_id}}\",\n  \"productoId\": \"{{producto_id}}\",\n  \"tiendaIds\": [\"{{tienda_id}}\"],\n  \"inicio\": \"2026-02-01T00:00:00.000Z\",\n  \"fin\": \"2026-02-28T23:59:59.999Z\",\n  \"restricciones\": 0\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/logistics/promociones",
@@ -1065,7 +1065,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{}"
+                  "raw": "{\n  \"precioPromocional\": 18.00,\n  \"fin\": \"2026-03-15T23:59:59.999Z\"\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/logistics/promociones/{{promocion_id}}",
