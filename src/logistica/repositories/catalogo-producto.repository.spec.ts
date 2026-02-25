@@ -1,30 +1,57 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
 import { CatalogoProductoRepository } from './catalogo-producto.repository';
-import { CatalogoProducto } from './entities';
+import { Catalogo } from './entities';
 
 describe('CatalogoProductoRepository', () => {
   let repository: CatalogoProductoRepository;
-  let typeormRepo: jest.Mocked<Repository<CatalogoProducto>>;
+  let catalogoTypeormRepo: jest.Mocked<Repository<Catalogo>> & {
+    manager: { createQueryBuilder: jest.Mock };
+  };
+
+  let mockRelationQB: {
+    of: jest.Mock;
+    add: jest.Mock;
+    remove: jest.Mock;
+  };
+
+  let mockSelectQB: {
+    innerJoin: jest.Mock;
+    where: jest.Mock;
+    andWhere: jest.Mock;
+    getCount: jest.Mock;
+  };
 
   beforeEach(async () => {
-    const mockTypeormRepo = {
-      create: jest.fn(),
-      save: jest.fn(),
-      createQueryBuilder: jest.fn(),
+    mockRelationQB = {
+      of: jest.fn().mockReturnThis(),
+      add: jest.fn().mockResolvedValue(undefined),
+      remove: jest.fn().mockResolvedValue(undefined),
+    };
+
+    mockSelectQB = {
+      innerJoin: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      getCount: jest.fn(),
+    };
+
+    const mockCatalogoRepo = {
       findOne: jest.fn(),
-      find: jest.fn(),
-      count: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
+      createQueryBuilder: jest.fn().mockReturnValue(mockSelectQB),
+      manager: {
+        createQueryBuilder: jest.fn().mockReturnValue({
+          relation: jest.fn().mockReturnValue(mockRelationQB),
+        }),
+      },
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CatalogoProductoRepository,
         {
-          provide: 'CATALOGO_PRODUCTO_REPOSITORY',
-          useValue: mockTypeormRepo,
+          provide: 'CATALOGO_REPOSITORY',
+          useValue: mockCatalogoRepo,
         },
       ],
     }).compile();
@@ -32,7 +59,7 @@ describe('CatalogoProductoRepository', () => {
     repository = module.get<CatalogoProductoRepository>(
       CatalogoProductoRepository,
     );
-    typeormRepo = module.get('CATALOGO_PRODUCTO_REPOSITORY');
+    catalogoTypeormRepo = module.get('CATALOGO_REPOSITORY');
   });
 
   it('should be defined', () => {
@@ -40,118 +67,95 @@ describe('CatalogoProductoRepository', () => {
   });
 
   describe('addProductoToCatalogo', () => {
-    it('should create and save catalogo producto relation', async () => {
+    it('should use the relation query builder to add a producto to a catalogo', async () => {
       const catalogoId = 'catalogo-1';
       const productoId = 'producto-1';
-      const created = { id: 'cp-1', catalogoId, productoId };
-      const saved = {
-        ...created,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
 
-      typeormRepo.create.mockReturnValue(created as any);
-      typeormRepo.save.mockResolvedValue(saved as any);
+      await repository.addProductoToCatalogo(catalogoId, productoId);
 
-      const result = await repository.addProductoToCatalogo(
-        catalogoId,
-        productoId,
-      );
-
-      expect(typeormRepo.create).toHaveBeenCalledWith({
-        catalogoId,
-        productoId,
-      });
-      expect(typeormRepo.save).toHaveBeenCalledWith(created);
-      expect(result).toEqual(saved);
+      expect(catalogoTypeormRepo.manager.createQueryBuilder).toHaveBeenCalled();
+      expect(mockRelationQB.of).toHaveBeenCalledWith(catalogoId);
+      expect(mockRelationQB.add).toHaveBeenCalledWith(productoId);
     });
   });
 
   describe('findByCatalogoId', () => {
-    it('should find all productos for a catalog', async () => {
+    it('should return productos for a given catalogoId', async () => {
       const catalogoId = 'catalogo-1';
-      const items: CatalogoProducto[] = [
-        {
-          id: 'cp-1',
-          catalogoId,
-          catalogo: { id: catalogoId, tiendaId: 'tienda-1' } as any,
-          productoId: 'producto-1',
-          producto: { id: 'producto-1', nombre: 'Product 1' } as any,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
+      const productos = [
+        { id: 'producto-1', nombre: 'Producto 1' },
+        { id: 'producto-2', nombre: 'Producto 2' },
       ];
 
-      typeormRepo.find.mockResolvedValue(items as any);
+      (catalogoTypeormRepo.findOne as jest.Mock).mockResolvedValue({
+        id: catalogoId,
+        productos,
+      });
 
       const result = await repository.findByCatalogoId(catalogoId);
 
-      expect(typeormRepo.find).toHaveBeenCalledWith({
-        where: { catalogoId },
-        relations: ['producto'],
+      expect(catalogoTypeormRepo.findOne).toHaveBeenCalledWith({
+        where: { id: catalogoId },
+        relations: ['productos'],
       });
-      expect(result).toEqual(items);
+      expect(result).toEqual(productos);
+    });
+
+    it('should return an empty array when catalogo is not found', async () => {
+      (catalogoTypeormRepo.findOne as jest.Mock).mockResolvedValue(null);
+
+      const result = await repository.findByCatalogoId('non-existent');
+
+      expect(result).toEqual([]);
     });
   });
 
   describe('exists', () => {
-    it('should return true when relation exists', async () => {
+    it('should return true when the relation exists', async () => {
       const catalogoId = 'catalogo-1';
       const productoId = 'producto-1';
 
-      typeormRepo.count.mockResolvedValue(1 as any);
+      mockSelectQB.getCount.mockResolvedValue(1);
 
       const result = await repository.exists(catalogoId, productoId);
 
-      expect(typeormRepo.count).toHaveBeenCalledWith({
-        where: { catalogoId, productoId },
-      });
+      expect(catalogoTypeormRepo.createQueryBuilder).toHaveBeenCalledWith(
+        'catalogo',
+      );
+      expect(mockSelectQB.innerJoin).toHaveBeenCalledWith(
+        'catalogo.productos',
+        'producto',
+      );
+      expect(mockSelectQB.where).toHaveBeenCalledWith(
+        'catalogo.id = :catalogoId',
+        { catalogoId },
+      );
+      expect(mockSelectQB.andWhere).toHaveBeenCalledWith(
+        'producto.id = :productoId',
+        { productoId },
+      );
       expect(result).toBe(true);
     });
 
-    it('should return false when relation does not exist', async () => {
-      const catalogoId = 'catalogo-1';
-      const productoId = 'producto-1';
+    it('should return false when the relation does not exist', async () => {
+      mockSelectQB.getCount.mockResolvedValue(0);
 
-      typeormRepo.count.mockResolvedValue(0 as any);
-
-      const result = await repository.exists(catalogoId, productoId);
+      const result = await repository.exists('catalogo-1', 'producto-x');
 
       expect(result).toBe(false);
     });
   });
 
   describe('removeProductoFromCatalogo', () => {
-    it('should remove producto from catalog and return true', async () => {
+    it('should use the relation query builder to remove a producto from a catalogo', async () => {
       const catalogoId = 'catalogo-1';
       const productoId = 'producto-1';
 
-      typeormRepo.delete.mockResolvedValue({ affected: 1 } as any);
+      await repository.removeProductoFromCatalogo(catalogoId, productoId);
 
-      const result = await repository.removeProductoFromCatalogo(
-        catalogoId,
-        productoId,
-      );
-
-      expect(typeormRepo.delete).toHaveBeenCalledWith({
-        catalogoId,
-        productoId,
-      });
-      expect(result).toBe(true);
-    });
-
-    it('should return false when relation not found', async () => {
-      const catalogoId = 'catalogo-1';
-      const productoId = 'producto-1';
-
-      typeormRepo.delete.mockResolvedValue({ affected: 0 } as any);
-
-      const result = await repository.removeProductoFromCatalogo(
-        catalogoId,
-        productoId,
-      );
-
-      expect(result).toBe(false);
+      expect(catalogoTypeormRepo.manager.createQueryBuilder).toHaveBeenCalled();
+      expect(mockRelationQB.of).toHaveBeenCalledWith(catalogoId);
+      expect(mockRelationQB.remove).toHaveBeenCalledWith(productoId);
     });
   });
 });

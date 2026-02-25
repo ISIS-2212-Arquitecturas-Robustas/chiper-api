@@ -2,11 +2,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { CatalogoProducto } from './catalogo-producto.entity';
+import { Catalogo } from './catalogo.entity';
 import { DisponibilidadZona } from './disponibilidad-zona.entity';
 import { ItemPedido } from './item-pedido.entity';
 import { Promocion } from './promocion.entity';
@@ -46,11 +47,8 @@ export class Producto {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(
-    () => CatalogoProducto,
-    (catalogoProducto) => catalogoProducto.producto,
-  )
-  catalogos: CatalogoProducto[];
+  @ManyToMany(() => Catalogo, (catalogo) => catalogo.productos)
+  catalogos: Catalogo[];
 
   @OneToMany(
     () => DisponibilidadZona,

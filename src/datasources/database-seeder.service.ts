@@ -91,14 +91,17 @@ export class DatabaseSeederService implements OnModuleInit {
 
       // ============================================
       // Seed Catálogo-Producto
+      // TypeORM auto-generates the junction table as
+      // "catalogos_productos_productos" with columns
+      // "catalogosId" and "productosId"
       // ============================================
       await this.dataSource.query(`
-        INSERT INTO catalogo_producto (id, "catalogoId", "productoId", "createdAt", "updatedAt") VALUES
-        ('cp111111-1111-1111-1111-111111111111', 'cat11111-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', NOW(), NOW()),
-        ('cp222222-2222-2222-2222-222222222222', 'cat11111-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab', NOW(), NOW()),
-        ('cp333333-3333-3333-3333-333333333333', 'cat11111-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaac', NOW(), NOW()),
-        ('cp444444-4444-4444-4444-444444444444', 'cat22222-2222-2222-2222-222222222222', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', NOW(), NOW()),
-        ('cp555555-5555-5555-5555-555555555555', 'cat22222-2222-2222-2222-222222222222', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaad', NOW(), NOW())
+        INSERT INTO "catalogos_productos_productos" ("catalogosId", "productosId") VALUES
+        ('cat11111-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
+        ('cat11111-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab'),
+        ('cat11111-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaac'),
+        ('cat22222-2222-2222-2222-222222222222', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
+        ('cat22222-2222-2222-2222-222222222222', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaad')
       `);
 
       // ============================================

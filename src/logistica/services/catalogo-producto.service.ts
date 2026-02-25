@@ -84,6 +84,6 @@ export class CatalogoProductoService {
 
     const relations =
       await this.catalogoProductoRepository.findByCatalogoId(catalogoId);
-    return relations.map((rel) => rel.producto);
+    return relations;
   }
 }

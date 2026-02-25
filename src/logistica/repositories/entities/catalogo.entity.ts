@@ -2,11 +2,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  OneToMany,
+  JoinTable,
+  ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { CatalogoProducto } from './catalogo-producto.entity';
+import { Producto } from './producto.entity';
 
 @Entity('catalogos')
 export class Catalogo {
@@ -31,9 +32,7 @@ export class Catalogo {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(
-    () => CatalogoProducto,
-    (catalogoProducto) => catalogoProducto.catalogo,
-  )
-  productos: CatalogoProducto[];
+  @ManyToMany(() => Producto, (producto) => producto.catalogos)
+  @JoinTable()
+  productos: Producto[];
 }
