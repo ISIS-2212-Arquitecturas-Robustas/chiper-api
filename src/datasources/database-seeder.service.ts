@@ -1,5 +1,37 @@
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import * as fs from 'fs';
+import * as yaml from 'js-yaml';
+import * as path from 'path';
 import { DataSource } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
+
+interface LoadSeedCounts {
+  // Logística
+  productos: number;
+  catalogos: number;
+  catalogos_productos: number;
+  promociones: number;
+  pedidos: number;
+  items_pedido: number;
+  despachos: number;
+  disponibilidad_zona: number;
+  notas_credito: number;
+  // Inventario
+  items_inventario: number;
+  registros_compra_producto_tienda: number;
+  registros_venta_producto_tienda: number;
+  // Ventas
+  productos_externos: number;
+  ventas: number;
+  items_venta: number;
+}
+
+interface LoadSeedConfig {
+  load: LoadSeedCounts;
+}
+
+/** Sentinel: recognised by batchInsert as a raw SQL expression (not quoted). */
+const NOW = 'NOW()';
 
 @Injectable()
 export class DatabaseSeederService implements OnModuleInit {
@@ -13,157 +45,396 @@ export class DatabaseSeederService implements OnModuleInit {
 
   async onModuleInit() {
     if (!this.seeded) {
-      await this.seed();
+      const mode = process.env.SEED_MODE ?? 'default';
+      if (mode === 'load') {
+        await this.seedForLoad();
+      } else {
+        await this.seedFromSql();
+      }
       this.seeded = true;
     }
   }
 
-  private async seed() {
-    try {
-      // Check if data already exists
-      const itemCount: { count: number }[] = await this.dataSource.query(
-        'SELECT COUNT(*) as count FROM items_inventario',
-      );
+  // ---------------------------------------------------------------
+  // Guard: skip if data already exists
+  // ---------------------------------------------------------------
+  private async isAlreadySeeded(): Promise<boolean> {
+    const result: { count: string }[] = await this.dataSource.query(
+      'SELECT COUNT(*) as count FROM items_inventario',
+    );
+    return parseInt(result[0].count, 10) > 0;
+  }
 
-      if (itemCount[0].count > 0) {
+  // ---------------------------------------------------------------
+  // Default mode – execute src/datasources/seed.sql
+  // ---------------------------------------------------------------
+  private async seedFromSql(): Promise<void> {
+    try {
+      if (await this.isAlreadySeeded()) {
         this.logger.log('Database already contains data. Skipping seed.');
         return;
       }
 
-      this.logger.log('Starting database seeding...');
+      this.logger.log('Starting database seeding from seed.sql…');
 
-      // ============================================
-      // Seed Items de Inventario
-      // ============================================
-      await this.dataSource.query(`
-        INSERT INTO items_inventario (id, "productoId", "tiendaId", cantidad, "precioVenta", "monedaId", "createdAt", "updatedAt") VALUES
-        ('11111111-1111-4111-8111-111111111111', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 100, 25.50, '550e8400-e29b-41d4-a716-446655440000', NOW(), NOW()),
-        ('22222222-2222-4222-8222-222222222222', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 50, 15.75, '550e8400-e29b-41d4-a716-446655440000', NOW(), NOW()),
-        ('33333333-3333-4333-8333-333333333333', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbc', 75, 27.00, '550e8400-e29b-41d4-a716-446655440000', NOW(), NOW()),
-        ('44444444-4444-4444-8444-444444444444', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaac', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 200, 10.00, '550e8400-e29b-41d4-a716-446655440000', NOW(), NOW()),
-        ('55555555-5555-4555-8555-555555555555', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaad', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbc', 150, 45.99, '550e8400-e29b-41d4-a716-446655440000', NOW(), NOW())
-      `);
+      const sqlPath = path.join(__dirname, 'seed.sql');
+      const sql = fs.readFileSync(sqlPath, 'utf8');
 
-      // ============================================
-      // Seed Registros de Compra
-      // ============================================
-      await this.dataSource.query(`
-        INSERT INTO registros_compra_producto_tienda (id, "tiendaId", "productoId", "compraId", "itemInventarioId", "fechaCompra", cantidad, "createdAt", "updatedAt") VALUES
-        ('c1111111-1111-4111-8111-111111111111', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', '11111111-1111-4111-8111-111111111111', '2026-01-15 10:30:00', 50, NOW(), NOW()),
-        ('c2222222-2222-4222-8222-222222222222', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'dddddddd-dddd-4ddd-8ddd-ddddddddddde', '11111111-1111-4111-8111-111111111111', '2026-01-20 14:15:00', 50, NOW(), NOW()),
-        ('c3333333-3333-4333-8333-333333333333', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab', 'dddddddd-dddd-4ddd-8ddd-dddddddddddf', '22222222-2222-4222-8222-222222222222', '2026-01-18 09:00:00', 50, NOW(), NOW()),
-        ('c4444444-4444-4444-8444-444444444444', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbc', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'dddddddd-dddd-4ddd-8ddd-ddddddddddda', '33333333-3333-4333-8333-333333333333', '2026-01-22 11:45:00', 75, NOW(), NOW()),
-        ('c5555555-5555-4555-8555-555555555555', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaac', 'dddddddd-dddd-4ddd-8ddd-dddddddddddb', '44444444-4444-4444-8444-444444444444', '2026-01-25 16:20:00', 200, NOW(), NOW())
-      `);
+      // Split on ';', drop empty lines and comment-only segments
+      const statements = sql
+        .split(';')
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0 && !s.startsWith('--'));
 
-      // ============================================
-      // Seed Registros de Venta
-      // ============================================
-      await this.dataSource.query(`
-        INSERT INTO registros_venta_producto_tienda (id, "tiendaId", "productoId", "ventaId", "itemInventarioId", "fechaVenta", cantidad, "createdAt", "updatedAt") VALUES
-        ('v1111111-1111-4111-8111-111111111111', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee', '11111111-1111-4111-8111-111111111111', '2026-01-28 10:30:00', 10, NOW(), NOW()),
-        ('v2222222-2222-4222-8222-222222222222', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeef', '11111111-1111-4111-8111-111111111111', '2026-01-29 15:45:00', 15, NOW(), NOW()),
-        ('v3333333-3333-4333-8333-333333333333', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee0', '22222222-2222-4222-8222-222222222222', '2026-01-30 12:00:00', 5, NOW(), NOW()),
-        ('v4444444-4444-4444-8444-444444444444', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbc', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1', '33333333-3333-4333-8333-333333333333', '2026-01-31 09:30:00', 20, NOW(), NOW()),
-        ('v5555555-5555-4555-8555-555555555555', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaac', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee2', '44444444-4444-4444-8444-444444444444', '2026-02-01 14:20:00', 25, NOW(), NOW()),
-        ('v6666666-6666-4666-8666-666666666666', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbc', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaad', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee3', '55555555-5555-4555-8555-555555555555', '2026-02-02 11:15:00', 10, NOW(), NOW())
-      `);
+      for (const stmt of statements) {
+        await this.dataSource.query(stmt);
+      }
 
-      // ============================================
-      // Seed Productos (Logística)
-      // ============================================
-      await this.dataSource.query(`
-        INSERT INTO productos (id, "codigoInterno", "codigoBarras", nombre, marca, categoria, presentacion, "precioBase", "monedaId", "createdAt", "updatedAt") VALUES
-        ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'PROD001', '1234567890123', 'Producto Ejemplo 1', 'Marca A', 'Categoria 1', 'Caja 10 unidades', 25.50, 'cccccccc-cccc-cccc-cccc-cccccccccccc', NOW(), NOW()),
-        ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab', 'PROD002', '1234567890124', 'Producto Ejemplo 2', 'Marca B', 'Categoria 1', 'Bolsa 5 kg', 15.75, 'cccccccc-cccc-cccc-cccc-cccccccccccc', NOW(), NOW()),
-        ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaac', 'PROD003', '1234567890125', 'Producto Ejemplo 3', 'Marca A', 'Categoria 2', 'Botella 1L', 10.00, 'cccccccc-cccc-cccc-cccc-cccccccccccc', NOW(), NOW()),
-        ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaad', 'PROD004', '1234567890126', 'Producto Ejemplo 4', 'Marca C', 'Categoria 2', 'Paquete 20 unidades', 45.99, 'cccccccc-cccc-cccc-cccc-cccccccccccc', NOW(), NOW())
-      `);
-
-      // ============================================
-      // Seed Catálogos
-      // ============================================
-      await this.dataSource.query(`
-        INSERT INTO catalogos (id, "tiendaId", "vigenciaDesde", "vigenciaHasta", zona, "createdAt", "updatedAt") VALUES
-        ('cat11111-1111-1111-1111-111111111111', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', '2026-02-01 00:00:00', '2026-12-31 23:59:59', 'Zona Norte', NOW(), NOW()),
-        ('cat22222-2222-2222-2222-222222222222', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbc', '2026-02-01 00:00:00', '2026-12-31 23:59:59', 'Zona Sur', NOW(), NOW())
-      `);
-
-      // ============================================
-      // Seed Catálogo-Producto
-      // TypeORM auto-generates the junction table as
-      // "catalogos_productos_productos" with columns
-      // "catalogosId" and "productosId"
-      // ============================================
-      await this.dataSource.query(`
-        INSERT INTO "catalogos_productos_productos" ("catalogosId", "productosId") VALUES
-        ('cat11111-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
-        ('cat11111-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab'),
-        ('cat11111-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaac'),
-        ('cat22222-2222-2222-2222-222222222222', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
-        ('cat22222-2222-2222-2222-222222222222', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaad')
-      `);
-
-      // ============================================
-      // Seed Promociones
-      // ============================================
-      await this.dataSource.query(`
-        INSERT INTO promociones (id, nombre, "precioPromocional", "monedaId", "productoId", "tiendaIds", inicio, fin, restricciones, "createdAt", "updatedAt") VALUES
-        ('pro11111-1111-1111-1111-111111111111', 'Promoción Producto 1', 20.00, 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', '["bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"]', '2026-02-01 00:00:00', '2026-02-28 23:59:59', 100, NOW(), NOW()),
-        ('pro22222-2222-2222-2222-222222222222', 'Promoción Producto 2', 12.00, 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab', '["bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbc"]', '2026-02-01 00:00:00', '2026-02-28 23:59:59', 50, NOW(), NOW())
-      `);
-
-      // ============================================
-      // Seed Pedidos
-      // ============================================
-      await this.dataSource.query(`
-        INSERT INTO pedidos (id, identificador, "tiendaId", "fechaHoraCreacion", "montoTotal", "monedaId", estado, "createdAt", "updatedAt") VALUES
-        ('ped11111-1111-1111-1111-111111111111', 'PED-001', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', '2026-02-03 10:00:00', 45.50, 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'creado', NOW(), NOW()),
-        ('ped22222-2222-2222-2222-222222222222', 'PED-002', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbc', '2026-02-03 11:00:00', 75.75, 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'aprobado', NOW(), NOW())
-      `);
-
-      // ============================================
-      // Seed Items de Pedido
-      // ============================================
-      await this.dataSource.query(`
-        INSERT INTO items_pedido (id, "pedidoId", "productoId", cantidad, "precioUnitario", descuento, "monedaId", lote, "fechaVencimiento", "createdAt", "updatedAt") VALUES
-        ('ip111111-1111-1111-1111-111111111111', 'ped11111-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 1, 25.50, 0.00, 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'LOTE001', '2026-12-31', NOW(), NOW()),
-        ('ip222222-2222-2222-2222-222222222222', 'ped11111-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab', 1, 20.00, 0.00, 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'LOTE002', '2026-12-31', NOW(), NOW()),
-        ('ip333333-3333-3333-3333-333333333333', 'ped22222-2222-2222-2222-222222222222', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 2, 25.50, 0.00, 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'LOTE003', '2026-12-31', NOW(), NOW()),
-        ('ip444444-4444-4444-4444-444444444444', 'ped22222-2222-2222-2222-222222222222', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaad', 1, 45.99, 0.00, 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'LOTE004', '2026-12-31', NOW(), NOW())
-      `);
-
-      // ============================================
-      // Seed Despachos
-      // ============================================
-      await this.dataSource.query(`
-        INSERT INTO despachos (id, "pedidoId", bodega, "horaSalida", "ventanaPrometidaInicio", "ventanaPrometidaFin", "createdAt", "updatedAt") VALUES
-        ('des11111-1111-1111-1111-111111111111', 'ped22222-2222-2222-2222-222222222222', 'Bodega Central', '2026-02-03 14:00:00', '2026-02-03 15:00:00', '2026-02-03 17:00:00', NOW(), NOW())
-      `);
-
-      // ============================================
-      // Seed Disponibilidad Zona
-      // ============================================
-      await this.dataSource.query(`
-        INSERT INTO disponibilidad_zona (id, "catalogoId", "productoId", "cantidadDisponible", "ultimaActualizacion", "createdAt", "updatedAt") VALUES
-        ('dz111111-1111-1111-1111-111111111111', 'cat11111-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 100, NOW(), NOW(), NOW()),
-        ('dz222222-2222-2222-2222-222222222222', 'cat11111-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab', 50, NOW(), NOW(), NOW()),
-        ('dz333333-3333-3333-3333-333333333333', 'cat22222-2222-2222-2222-222222222222', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 75, NOW(), NOW(), NOW()),
-        ('dz444444-4444-4444-4444-444444444444', 'cat22222-2222-2222-2222-222222222222', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaad', 150, NOW(), NOW(), NOW())
-      `);
-
-      // ============================================
-      // Seed Notas de Crédito
-      // ============================================
-      await this.dataSource.query(`
-        INSERT INTO notas_credito (id, "pedidoId", "numeroDocumento", fecha, motivo, monto, "monedaId", evidencia, "createdAt", "updatedAt") VALUES
-        ('not11111-1111-1111-1111-111111111111', 'ped11111-1111-1111-1111-111111111111', 'NC-001', '2026-02-04', 'productoVencido', 5.50, 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'Producto vencido en entrega', NOW(), NOW())
-      `);
-
-      this.logger.log('✅ Database seeding completed successfully');
+      this.logger.log('✅ Database seeding from seed.sql completed');
     } catch (error) {
-      this.logger.error('❌ Error seeding database:', error);
+      this.logger.error('❌ Error seeding from seed.sql:', error);
       throw error;
     }
   }
+
+  // ---------------------------------------------------------------
+  // Load mode – generate synthetic rows from load-seed.yaml
+  // # Default (e2e-safe) seeding — unchanged behaviour
+  /* npm run start
+    # Load test seeding
+    SEED_MODE=load npm run start
+    # Adjust volume before load test
+    vim src/datasources/load-seed.yaml */
+  // ---------------------------------------------------------------
+  private async seedForLoad(): Promise<void> {
+    try {
+      if (await this.isAlreadySeeded()) {
+        this.logger.log('Database already contains data. Skipping load seed.');
+        return;
+      }
+
+      const yamlPath = path.join(__dirname, 'load-seed.yaml');
+      const config = yaml.load(
+        fs.readFileSync(yamlPath, 'utf8'),
+      ) as LoadSeedConfig;
+      const counts = config.load;
+
+      this.logger.log(`Starting load seed – counts: ${JSON.stringify(counts)}`);
+
+      // Reference UUIDs that mirror the docker-compose defaults
+      const MONEDA_ID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
+      const MONEDA_ID_INV = '550e8400-e29b-41d4-a716-446655440000';
+      const TIENDAS = [
+        'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+        'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbc',
+      ];
+      const CATEGORIAS = ['Categoria 1', 'Categoria 2', 'Categoria 3'];
+      const MARCAS = ['Marca A', 'Marca B', 'Marca C', 'Marca D'];
+      const ESTADOS_PEDIDO = [
+        'creado',
+        'aprobado',
+        'enAlistamiento',
+        'alistado',
+        'despachado',
+        'entregado',
+      ];
+      const MOTIVOS_NC = [
+        'productoVencido',
+        'productoEquivocado',
+        'danoEnTransporte',
+      ];
+
+      // ── 1. productos ──────────────────────────────────────────
+      const productoIds = this.uuids(counts.productos);
+      await this.batchInsert(
+        `INSERT INTO productos (id, "codigoInterno", "codigoBarras", nombre, marca, categoria, presentacion, "precioBase", "monedaId") VALUES`,
+        productoIds.map((id, i) => [
+          id,
+          `LOAD-${String(i + 1).padStart(5, '0')}`,
+          `${7000000000000 + i}`,
+          `Producto Load ${i + 1}`,
+          MARCAS[i % MARCAS.length],
+          CATEGORIAS[i % CATEGORIAS.length],
+          `Presentacion ${(i % 3) + 1}`,
+          (10 + (i % 90)).toFixed(2),
+          MONEDA_ID,
+        ]),
+      );
+
+      // ── 2. catalogos ──────────────────────────────────────────
+      const catalogoIds = this.uuids(counts.catalogos);
+      await this.batchInsert(
+        `INSERT INTO catalogos (id, "tiendaId", "vigenciaDesde", "vigenciaHasta", zona) VALUES`,
+        catalogoIds.map((id, i) => [
+          id,
+          TIENDAS[i % TIENDAS.length],
+          '2026-01-01 00:00:00',
+          '2026-12-31 23:59:59',
+          `Zona Load ${i + 1}`,
+        ]),
+      );
+
+      // ── 3. catalogos_productos_productos (junction) ───────────
+      const junctionCount = Math.min(
+        counts.catalogos_productos,
+        catalogoIds.length * productoIds.length,
+      );
+      await this.batchInsert(
+        `INSERT INTO "catalogos_productos_productos" ("catalogosId", "productosId") VALUES`,
+        Array.from({ length: junctionCount }, (_, i) => [
+          catalogoIds[i % catalogoIds.length],
+          productoIds[i % productoIds.length],
+        ]),
+        false, // no createdAt / updatedAt on this junction table
+      );
+
+      // ── 4. promociones ────────────────────────────────────────
+      await this.batchInsert(
+        `INSERT INTO promociones (id, nombre, "precioPromocional", "monedaId", "productoId", "tiendaIds", inicio, fin, restricciones) VALUES`,
+        this.uuids(counts.promociones).map((id, i) => [
+          id,
+          `Promo Load ${i + 1}`,
+          (5 + (i % 40)).toFixed(2),
+          MONEDA_ID,
+          productoIds[i % productoIds.length],
+          JSON.stringify([TIENDAS[i % TIENDAS.length]]),
+          '2026-03-01 00:00:00',
+          '2026-06-30 23:59:59',
+          (i % 200) + 1,
+        ]),
+      );
+
+      // ── 5. pedidos ────────────────────────────────────────────
+      const pedidoIds = this.uuids(counts.pedidos);
+      await this.batchInsert(
+        `INSERT INTO pedidos (id, identificador, "tiendaId", "fechaHoraCreacion", "montoTotal", "monedaId", estado) VALUES`,
+        pedidoIds.map((id, i) => [
+          id,
+          `PED-LOAD-${String(i + 1).padStart(5, '0')}`,
+          TIENDAS[i % TIENDAS.length],
+          this.daysAgo(counts.pedidos - i),
+          (20 + (i % 200)).toFixed(2),
+          MONEDA_ID,
+          ESTADOS_PEDIDO[i % ESTADOS_PEDIDO.length],
+        ]),
+      );
+
+      // ── 6. items_pedido ───────────────────────────────────────
+      await this.batchInsert(
+        `INSERT INTO items_pedido (id, "pedidoId", "productoId", cantidad, "precioUnitario", descuento, "monedaId", lote, "fechaVencimiento") VALUES`,
+        this.uuids(counts.items_pedido).map((id, i) => [
+          id,
+          pedidoIds[i % pedidoIds.length],
+          productoIds[i % productoIds.length],
+          (i % 10) + 1,
+          (10 + (i % 90)).toFixed(2),
+          '0.00',
+          MONEDA_ID,
+          `LOTE-LOAD-${i + 1}`,
+          '2027-12-31',
+        ]),
+      );
+
+      // ── 7. despachos ──────────────────────────────────────────
+      await this.batchInsert(
+        `INSERT INTO despachos (id, "pedidoId", bodega, "horaSalida", "ventanaPrometidaInicio", "ventanaPrometidaFin") VALUES`,
+        this.uuids(counts.despachos).map((id, i) => [
+          id,
+          pedidoIds[i % pedidoIds.length],
+          `Bodega Load ${(i % 5) + 1}`,
+          '2026-03-05 08:00:00',
+          '2026-03-05 10:00:00',
+          '2026-03-05 18:00:00',
+        ]),
+      );
+
+      // ── 8. disponibilidad_zona ────────────────────────────────
+      await this.batchInsert(
+        `INSERT INTO disponibilidad_zona (id, "catalogoId", "productoId", "cantidadDisponible", "ultimaActualizacion") VALUES`,
+        this.uuids(counts.disponibilidad_zona).map((id, i) => [
+          id,
+          catalogoIds[i % catalogoIds.length],
+          productoIds[i % productoIds.length],
+          (i % 500) + 1,
+          NOW, // raw SQL sentinel → rendered as NOW()
+        ]),
+      );
+
+      // ── 9. notas_credito ──────────────────────────────────────
+      await this.batchInsert(
+        `INSERT INTO notas_credito (id, "pedidoId", "numeroDocumento", fecha, motivo, monto, "monedaId", evidencia) VALUES`,
+        this.uuids(counts.notas_credito).map((id, i) => [
+          id,
+          pedidoIds[i % pedidoIds.length],
+          `NC-LOAD-${String(i + 1).padStart(4, '0')}`,
+          '2026-03-01',
+          MOTIVOS_NC[i % MOTIVOS_NC.length],
+          (1 + (i % 50)).toFixed(2),
+          MONEDA_ID,
+          `Evidencia load test ${i + 1}`,
+        ]),
+      );
+
+      // ── 10. items_inventario ──────────────────────────────────
+      const itemInvIds = this.uuids(counts.items_inventario);
+      await this.batchInsert(
+        `INSERT INTO items_inventario (id, "productoId", "tiendaId", cantidad, "precioVenta", "monedaId") VALUES`,
+        itemInvIds.map((id, i) => [
+          id,
+          productoIds[i % productoIds.length],
+          TIENDAS[i % TIENDAS.length],
+          (i % 500) + 1,
+          (5 + (i % 95)).toFixed(2),
+          MONEDA_ID_INV,
+        ]),
+      );
+
+      // ── 11. registros_compra ──────────────────────────────────
+      await this.batchInsert(
+        `INSERT INTO registros_compra_producto_tienda (id, "tiendaId", "productoId", "compraId", "itemInventarioId", "fechaCompra", cantidad) VALUES`,
+        this.uuids(counts.registros_compra_producto_tienda).map((id, i) => [
+          id,
+          TIENDAS[i % TIENDAS.length],
+          productoIds[i % productoIds.length],
+          uuidv4(),
+          itemInvIds[i % itemInvIds.length],
+          this.hoursAgo(counts.registros_compra_producto_tienda - i),
+          (i % 100) + 1,
+        ]),
+      );
+
+      // ── 12. registros_venta ───────────────────────────────────
+      await this.batchInsert(
+        `INSERT INTO registros_venta_producto_tienda (id, "tiendaId", "productoId", "ventaId", "itemInventarioId", "fechaVenta", cantidad) VALUES`,
+        this.uuids(counts.registros_venta_producto_tienda).map((id, i) => [
+          id,
+          TIENDAS[i % TIENDAS.length],
+          productoIds[i % productoIds.length],
+          uuidv4(),
+          itemInvIds[i % itemInvIds.length],
+          this.hoursAgo(counts.registros_venta_producto_tienda - i),
+          (i % 50) + 1,
+        ]),
+      );
+
+      // ── 13. productos_externos ────────────────────────────────
+      const prodExternoIds = this.uuids(counts.productos_externos);
+      await this.batchInsert(
+        `INSERT INTO productos_externos (id, "tiendaId", "codigoBarras", nombre, categoria, "precioBase", "monedaId", cantidad) VALUES`,
+        prodExternoIds.map((id, i) => [
+          id,
+          TIENDAS[i % TIENDAS.length],
+          `EXT-${8000000000000 + i}`,
+          `Producto Externo Load ${i + 1}`,
+          CATEGORIAS[i % CATEGORIAS.length],
+          (8 + (i % 50)).toFixed(2),
+          MONEDA_ID_INV,
+          (i % 100) + 1,
+        ]),
+      );
+
+      // ── 14. ventas ────────────────────────────────────────────
+      const ventaIds = this.uuids(counts.ventas);
+      await this.batchInsert(
+        `INSERT INTO ventas (id, "tiendaId", "fechaHora", total, "monedaId") VALUES`,
+        ventaIds.map((id, i) => [
+          id,
+          TIENDAS[i % TIENDAS.length],
+          this.hoursAgo(counts.ventas - i),
+          (10 + (i % 300)).toFixed(2),
+          MONEDA_ID_INV,
+        ]),
+      );
+
+      // ── 15. items_venta ───────────────────────────────────────
+      await this.batchInsert(
+        `INSERT INTO items_venta (id, "ventaId", "productoExternoId", "productoId", cantidad, "precioUnitario", "monedaId") VALUES`,
+        this.uuids(counts.items_venta).map((id, i) => [
+          id,
+          ventaIds[i % ventaIds.length],
+          prodExternoIds[i % prodExternoIds.length],
+          null, // productoId is nullable
+          (i % 10) + 1,
+          (5 + (i % 50)).toFixed(2),
+          MONEDA_ID_INV,
+        ]),
+      );
+
+      this.logger.log('✅ Load seed completed successfully');
+    } catch (error) {
+      this.logger.error('❌ Error during load seed:', error);
+      throw error;
+    }
+  }
+
+  // ---------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------
+
+  /** Generate `n` fresh UUIDs. */
+  private uuids(n: number): string[] {
+    return Array.from({ length: n }, () => uuidv4());
+  }
+
+  /** ISO datetime string for `n` days in the past. */
+  private daysAgo(n: number): string {
+    return new Date(Date.now() - n * 86_400_000)
+      .toISOString()
+      .replace('T', ' ')
+      .slice(0, 19);
+  }
+
+  /** ISO datetime string for `n` hours in the past. */
+  private hoursAgo(n: number): string {
+    return new Date(Date.now() - n * 3_600_000)
+      .toISOString()
+      .replace('T', ' ')
+      .slice(0, 19);
+  }
+
+  /**
+   * Build and execute batched INSERT statements.
+   *
+   * @param insertPrefix      Full "INSERT INTO … (cols) VALUES" string.
+   *                          Must NOT include createdAt / updatedAt columns –
+   *                          they are appended automatically when appendTimestamps=true.
+   * @param rows              2-D array of column values.
+   *                          Use the {@link NOW} constant for a raw NOW() expression.
+   *                          Use `null` for SQL NULL.
+   * @param appendTimestamps  When true (default), appends NOW(), NOW() for
+   *                          createdAt and updatedAt. Pass false for junction
+   *                          tables that have no timestamp columns.
+   * @param batchSize         Max rows per statement (default 500).
+   */
+  private async batchInsert(
+    insertPrefix: string,
+    rows: (string | number | null)[][],
+    appendTimestamps = true,
+    batchSize = 500,
+  ): Promise<void> {
+    for (let start = 0; start < rows.length; start += batchSize) {
+      const batch = rows.slice(start, start + batchSize);
+
+      const valueClauses = batch.map((row) => {
+        const colsSql = row.map((col) => {
+          if (col === null) return 'NULL';
+          if (col === NOW) return 'NOW()'; // raw SQL sentinel – do not quote
+          if (typeof col === 'number') return String(col);
+          return `'${String(col).replace(/'/g, "''")}'`; // escape single quotes
+        });
+
+        if (appendTimestamps) {
+          colsSql.push('NOW()', 'NOW()');
+        }
+
+        return `(${colsSql.join(', ')})`;
+      });
+
+      await this.dataSource.query(
+        `${insertPrefix}\n${valueClauses.join(',\n')}`,
+      );
+    }
+  }
+
+  // (legacy seed() removed – data lives in src/datasources/seed.sql)
 }

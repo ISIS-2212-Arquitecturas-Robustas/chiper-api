@@ -1,0 +1,21 @@
+load:
+  # --- Logística ---
+  productos: 50
+  catalogos: 10
+  catalogos_productos: 100
+  promociones: 30
+  pedidos: 100
+  items_pedido: 300               # ~3 items por pedido en promedio
+  despachos: 50
+  disponibilidad_zona: 100
+  notas_credito: 40
+
+  # --- Inventario ---
+  items_inventario: 200
+  registros_compra_producto_tienda: 300
+  registros_venta_producto_tienda: 400
+
+  # --- Ventas ---
+  productos_externos: 80
+  ventas: 150
+  items_venta: 450                # ~3 items por venta en promedio
