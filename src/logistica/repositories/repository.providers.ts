@@ -1,12 +1,12 @@
 import { DataSource } from 'typeorm';
 import {
-    Catalogo,
-    Despacho,
-    DisponibilidadZona,
-    NotaCredito,
-    Pedido,
-    Producto,
-    Promocion,
+  Catalogo,
+  Despacho,
+  DisponibilidadZona,
+  NotaCredito,
+  Pedido,
+  Producto,
+  Promocion,
 } from './entities';
 
 export const repositoryProviders = [

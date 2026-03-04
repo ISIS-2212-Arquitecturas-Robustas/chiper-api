@@ -28,6 +28,7 @@ import {
   PedidoService,
   ProductoService,
   PromocionService,
+  TenderoService,
 } from './services';
 
 // Controllers
@@ -40,6 +41,7 @@ import {
   PedidoController,
   ProductoController,
   PromocionController,
+  TenderoController,
 } from './controllers';
 
 import { repositoryProviders } from './repositories/repository.providers';
@@ -55,6 +57,7 @@ import { repositoryProviders } from './repositories/repository.providers';
     NotaCreditoController,
     DisponibilidadZonaController,
     CatalogoProductoController,
+    TenderoController,
   ],
   providers: [
     // Repository Providers
@@ -79,6 +82,7 @@ import { repositoryProviders } from './repositories/repository.providers';
     NotaCreditoService,
     DisponibilidadZonaService,
     CatalogoProductoService,
+    TenderoService,
     // Mock Clients
     TiendaClientMock,
   ],
@@ -91,6 +95,7 @@ import { repositoryProviders } from './repositories/repository.providers';
     NotaCreditoService,
     DisponibilidadZonaService,
     CatalogoProductoService,
+    TenderoService,
   ],
 })
 export class LogisticaModule {}

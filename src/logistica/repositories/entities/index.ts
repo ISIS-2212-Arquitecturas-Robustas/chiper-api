@@ -6,4 +6,3 @@ export { MotivoNotaCredito, NotaCredito } from './nota-credito.entity';
 export { EstadoPedido, Pedido } from './pedido.entity';
 export { Producto } from './producto.entity';
 export { Promocion } from './promocion.entity';
-

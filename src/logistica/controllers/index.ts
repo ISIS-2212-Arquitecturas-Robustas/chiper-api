@@ -6,3 +6,4 @@ export { NotaCreditoController } from './nota-credito.controller';
 export { PedidoController } from './pedido.controller';
 export { ProductoController } from './producto.controller';
 export { PromocionController } from './promocion.controller';
+export { TenderoController } from './tendero.controller';
