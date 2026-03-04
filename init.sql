@@ -300,40 +300,28 @@ BEGIN
         
         -- ============================================
         -- Datos de prueba para Catálogo-Producto
+        -- TypeORM auto-generates the junction table as
+        -- "catalogos_productos_productos" with columns
+        -- "catalogosId" and "productosId"
         -- ============================================
         
-        INSERT INTO catalogo_producto (id, catalogoId, productoId, createdAt, updatedAt) VALUES
+        INSERT INTO catalogos_productos_productos (catalogosId, productosId) VALUES
         -- Productos en Catálogo 1
-        ('cp111111-1111-1111-1111-111111111111', 
-         'cat11111-1111-1111-1111-111111111111', 
-         'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 
-         NOW(), 
-         NOW()),
+        ('cat11111-1111-1111-1111-111111111111', 
+         'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
         
-        ('cp222222-2222-2222-2222-222222222222', 
-         'cat11111-1111-1111-1111-111111111111', 
-         'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab', 
-         NOW(), 
-         NOW()),
+        ('cat11111-1111-1111-1111-111111111111', 
+         'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab'),
         
-        ('cp333333-3333-3333-3333-333333333333', 
-         'cat11111-1111-1111-1111-111111111111', 
-         'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaac', 
-         NOW(), 
-         NOW()),
+        ('cat11111-1111-1111-1111-111111111111', 
+         'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaac'),
         
         -- Productos en Catálogo 2
-        ('cp444444-4444-4444-4444-444444444444', 
-         'cat22222-2222-2222-2222-222222222222', 
-         'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 
-         NOW(), 
-         NOW()),
+        ('cat22222-2222-2222-2222-222222222222', 
+         'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
         
-        ('cp555555-5555-5555-5555-555555555555', 
-         'cat22222-2222-2222-2222-222222222222', 
-         'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaad', 
-         NOW(), 
-         NOW());
+        ('cat22222-2222-2222-2222-222222222222', 
+         'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaad');
         
         -- ============================================
         -- Datos de prueba para Promociones

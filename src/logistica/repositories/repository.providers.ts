@@ -1,13 +1,12 @@
 import { DataSource } from 'typeorm';
 import {
-  Catalogo,
-  CatalogoProducto,
-  Despacho,
-  DisponibilidadZona,
-  NotaCredito,
-  Pedido,
-  Producto,
-  Promocion,
+    Catalogo,
+    Despacho,
+    DisponibilidadZona,
+    NotaCredito,
+    Pedido,
+    Producto,
+    Promocion,
 } from './entities';
 
 export const repositoryProviders = [
@@ -46,12 +45,6 @@ export const repositoryProviders = [
     provide: 'DISPONIBILIDAD_ZONA_REPOSITORY',
     useFactory: (dataSource: DataSource) =>
       dataSource.getRepository(DisponibilidadZona),
-    inject: ['DATA_SOURCE'],
-  },
-  {
-    provide: 'CATALOGO_PRODUCTO_REPOSITORY',
-    useFactory: (dataSource: DataSource) =>
-      dataSource.getRepository(CatalogoProducto),
     inject: ['DATA_SOURCE'],
   },
 ];
