@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Test, TestingModule } from '@nestjs/testing';
 import { QueryProductosDisponiblesDto } from '../dtos';
 import { TenderoService } from '../services';
