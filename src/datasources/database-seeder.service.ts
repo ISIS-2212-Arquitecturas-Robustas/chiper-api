@@ -65,6 +65,9 @@ export class DatabaseSeederService implements OnModuleInit {
         catalogo2: id('catalogos:2'),
         promocion1: id('promociones:1'),
         promocion2: id('promociones:2'),
+        promocionTienda1: id('promocion-tiendas:1'),
+        promocionTienda2: id('promocion-tiendas:2'),
+        promocionTienda3: id('promocion-tiendas:3'),
         pedido1: id('pedidos:1'),
         pedido2: id('pedidos:2'),
         itemPedido1: id('items-pedido:1'),
@@ -155,9 +158,16 @@ export class DatabaseSeederService implements OnModuleInit {
       // Seed Promociones
       // ============================================
       await this.dataSource.query(`
-        INSERT INTO promociones (id, nombre, "precioPromocional", "monedaId", "productoId", "tiendaIds", inicio, fin, restricciones, "createdAt", "updatedAt") VALUES
-        ('${seededIds.promocion1}', 'Promoción Producto 1', 20.00, 'cccccccc-cccc-cccc-cccc-cccccccccccc', '${seededIds.producto1}', '["${seededIds.tienda1}"]', '2026-02-01 00:00:00', '2026-02-28 23:59:59', 100, NOW(), NOW()),
-        ('${seededIds.promocion2}', 'Promoción Producto 2', 12.00, 'cccccccc-cccc-cccc-cccc-cccccccccccc', '${seededIds.producto2}', '["${seededIds.tienda1}", "${seededIds.tienda2}"]', '2026-02-01 00:00:00', '2026-02-28 23:59:59', 50, NOW(), NOW())
+        INSERT INTO promociones (id, nombre, "precioPromocional", "monedaId", "productoId", inicio, fin, restricciones, "createdAt", "updatedAt") VALUES
+        ('${seededIds.promocion1}', 'Promoción Producto 1', 20.00, 'cccccccc-cccc-cccc-cccc-cccccccccccc', '${seededIds.producto1}', '2026-02-01 00:00:00', '2026-02-28 23:59:59', 100, NOW(), NOW()),
+        ('${seededIds.promocion2}', 'Promoción Producto 2', 12.00, 'cccccccc-cccc-cccc-cccc-cccccccccccc', '${seededIds.producto2}', '2026-02-01 00:00:00', '2026-02-28 23:59:59', 50, NOW(), NOW())
+      `);
+
+      await this.dataSource.query(`
+        INSERT INTO promocion_tiendas (id, "promocionId", "tiendaId") VALUES
+        ('${seededIds.promocionTienda1}', '${seededIds.promocion1}', '${seededIds.tienda1}'),
+        ('${seededIds.promocionTienda2}', '${seededIds.promocion2}', '${seededIds.tienda1}'),
+        ('${seededIds.promocionTienda3}', '${seededIds.promocion2}', '${seededIds.tienda2}')
       `);
 
       // ============================================

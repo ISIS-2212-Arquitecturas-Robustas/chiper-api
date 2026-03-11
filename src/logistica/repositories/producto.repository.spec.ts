@@ -167,4 +167,33 @@ describe('ProductoRepository', () => {
       expect(result).toBe(false);
     });
   });
+
+  describe('findProductosDisponiblesParaTendero', () => {
+    it('should query active promotions through promocion_tiendas', async () => {
+      const productos: Producto[] = [];
+      const queryBuilder = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(productos),
+      };
+
+      typeormRepo.createQueryBuilder.mockReturnValue(queryBuilder as any);
+
+      const result = await repository.findProductosDisponiblesParaTendero(
+        'tienda-1',
+        'zona-centro',
+      );
+
+      expect(typeormRepo.createQueryBuilder).toHaveBeenCalledWith('producto');
+      expect(queryBuilder.andWhere).toHaveBeenNthCalledWith(
+        1,
+        expect.stringContaining('JOIN promocion_tiendas pt'),
+        expect.objectContaining({
+          now: expect.any(Date),
+          tiendaId: 'tienda-1',
+        }),
+      );
+      expect(result).toEqual(productos);
+    });
+  });
 });

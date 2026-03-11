@@ -85,12 +85,13 @@ export class ProductoRepository {
         `EXISTS (
           SELECT 1
           FROM promociones promo
+          JOIN promocion_tiendas pt ON pt."promocionId" = promo.id
           WHERE promo."productoId" = producto.id
             AND promo.inicio <= :now
             AND promo.fin >= :now
-            AND CAST(promo."tiendaIds" AS jsonb) @> CAST(:tiendaIdJson AS jsonb)
+            AND pt."tiendaId" = :tiendaId
         )`,
-        { now, tiendaIdJson: JSON.stringify([tiendaId]) },
+        { now, tiendaId },
       )
       .andWhere(
         // C: disponible en catálogo de la zona solicitada

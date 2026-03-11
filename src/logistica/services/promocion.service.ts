@@ -59,7 +59,7 @@ export class PromocionService {
       precioPromocional: parseFloat(promocion.precioPromocional.toString()),
       monedaId: promocion.monedaId,
       productoId: promocion.productoId,
-      tiendaIds: promocion.tiendaIds,
+      tiendaIds: promocion.tiendas?.map((tienda) => tienda.tiendaId) ?? [],
       inicio: promocion.inicio,
       fin: promocion.fin,
       restricciones: promocion.restricciones,

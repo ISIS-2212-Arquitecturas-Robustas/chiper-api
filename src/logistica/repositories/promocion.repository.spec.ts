@@ -41,6 +41,12 @@ describe('PromocionRepository', () => {
         nombre: 'Promocion Test',
         precioPromocional: 100.5,
         monedaId: 'moneda-1',
+        productoId: '9d32f377-3070-4fe5-b3b4-a131c77d3ba8',
+        tiendaIds: [
+          '8f0c0ec3-9a3f-4aeb-b4cf-7bc83a9b651f',
+          '8f0c0ec3-9a3f-4aeb-b4cf-7bc83a9b651f',
+          '2b2fd91d-4eff-425c-b60f-3574b5b9c6b4',
+        ],
         inicio: new Date(),
         fin: new Date(),
         restricciones: 2,
@@ -57,7 +63,13 @@ describe('PromocionRepository', () => {
 
       const result = await repository.create(data);
 
-      expect(typeormRepo.create).toHaveBeenCalledWith(data);
+      expect(typeormRepo.create).toHaveBeenCalledWith({
+        ...data,
+        tiendas: [
+          { tiendaId: '8f0c0ec3-9a3f-4aeb-b4cf-7bc83a9b651f' },
+          { tiendaId: '2b2fd91d-4eff-425c-b60f-3574b5b9c6b4' },
+        ],
+      });
       expect(typeormRepo.save).toHaveBeenCalledWith(created);
       expect(result).toEqual(saved);
     });
@@ -68,6 +80,7 @@ describe('PromocionRepository', () => {
       const query = { nombre: 'test' };
       const items: Promocion[] = [];
       const queryBuilder = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue(items),
       };
@@ -77,6 +90,10 @@ describe('PromocionRepository', () => {
       const result = await repository.findAll(query);
 
       expect(typeormRepo.createQueryBuilder).toHaveBeenCalledWith('promocion');
+      expect(queryBuilder.leftJoinAndSelect).toHaveBeenCalledWith(
+        'promocion.tiendas',
+        'tiendas',
+      );
       expect(result).toEqual(items);
     });
 
@@ -84,6 +101,7 @@ describe('PromocionRepository', () => {
       const query = {};
       const items: Promocion[] = [];
       const queryBuilder = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue(items),
       };
@@ -116,6 +134,7 @@ describe('PromocionRepository', () => {
 
       expect(typeormRepo.findOne).toHaveBeenCalledWith({
         where: { id: 'prom-1' },
+        relations: ['tiendas'],
       });
       expect(result).toEqual(item);
     });
@@ -152,6 +171,7 @@ describe('PromocionRepository', () => {
       expect(typeormRepo.update).toHaveBeenCalledWith('prom-1', updates);
       expect(typeormRepo.findOne).toHaveBeenCalledWith({
         where: { id: 'prom-1' },
+        relations: ['tiendas'],
       });
       expect(result).toEqual(updated);
     });
