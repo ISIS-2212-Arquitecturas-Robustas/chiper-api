@@ -1,0 +1,33 @@
+import { Module } from '@nestjs/common';
+
+// Repositories (Data Layer)
+import { ProductoExternoRepository, VentaRepository } from './repositories';
+
+// Services
+import { ProductoExternoService, VentaService } from './services';
+
+// Controllers
+import { ProductoExternoController, VentaController } from './controllers';
+
+// Clients Mock
+import { TiendaClientMock } from './clients';
+import { repositoryProviders } from './repositories/repository.providers';
+import { LogisticaProductosClient } from '../../shared/logistica-client/src';
+
+@Module({
+  controllers: [ProductoExternoController, VentaController],
+  providers: [
+    // Repositories
+    ...repositoryProviders,
+    ProductoExternoRepository,
+    VentaRepository,
+    // Services
+    ProductoExternoService,
+    VentaService,
+    // Mock Clients
+    TiendaClientMock,
+    LogisticaProductosClient,
+  ],
+  exports: [VentaService],
+})
+export class VentasModule {}

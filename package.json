@@ -6,18 +6,34 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
-    "start:dev": "nest start --watch",
-    "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "build": "npm run build:logistica && npm run build:inventario && npm run build:ventas",
+    "build:logistica": "nest build logistica",
+    "build:inventario": "nest build inventario",
+    "build:ventas": "nest build ventas",
+    "db:seed": "ts-node -r tsconfig-paths/register scripts/seed-database.ts",
+    "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\" \"test/**/*.ts\" \"scripts/**/*.ts\"",
+    "start": "npm run start:logistica",
+    "start:dev": "npm run start:logistica:dev",
+    "start:debug": "nest start logistica --debug --watch",
+    "start:logistica": "nest start logistica",
+    "start:logistica:dev": "nest start logistica --watch",
+    "start:logistica:prod": "node dist/apps/logistica/main",
+    "start:inventario": "nest start inventario",
+    "start:inventario:dev": "nest start inventario --watch",
+    "start:inventario:prod": "node dist/apps/inventario/main",
+    "start:ventas": "nest start ventas",
+    "start:ventas:dev": "nest start ventas --watch",
+    "start:ventas:prod": "node dist/apps/ventas/main",
+    "start:prod": "npm run start:logistica:prod",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json --runInBand --forceExit"
+    "test:e2e": "npm run test:e2e:logistica && npm run test:e2e:inventario && npm run test:e2e:ventas",
+    "test:e2e:logistica": "jest --config ./test/jest-logistica-e2e.json --runInBand",
+    "test:e2e:inventario": "jest --config ./test/jest-inventario-e2e.json --runInBand",
+    "test:e2e:ventas": "jest --config ./test/jest-ventas-e2e.json --runInBand"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -66,7 +82,7 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "rootDir": ".",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
@@ -74,7 +90,7 @@
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage",
+    "coverageDirectory": "coverage",
     "testEnvironment": "node"
   }
 }

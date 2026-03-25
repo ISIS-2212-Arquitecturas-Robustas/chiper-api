@@ -1,12 +1,39 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
+  "monorepo": true,
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src",
+  "root": "apps/logistica",
+  "sourceRoot": "apps/logistica/src",
   "compilerOptions": {
-    "deleteOutDir": true,
-    "assets": [
-      { "include": "datasources/*.sql", "outDir": "dist" },
-      { "include": "datasources/*.yaml", "outDir": "dist" }
-    ]
+    "deleteOutDir": true
+  },
+  "projects": {
+    "logistica": {
+      "type": "application",
+      "root": "apps/logistica",
+      "entryFile": "main",
+      "sourceRoot": "apps/logistica/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/logistica/tsconfig.app.json"
+      }
+    },
+    "inventario": {
+      "type": "application",
+      "root": "apps/inventario",
+      "entryFile": "main",
+      "sourceRoot": "apps/inventario/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/inventario/tsconfig.app.json"
+      }
+    },
+    "ventas": {
+      "type": "application",
+      "root": "apps/ventas",
+      "entryFile": "main",
+      "sourceRoot": "apps/ventas/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/ventas/tsconfig.app.json"
+      }
+    }
   }
 }

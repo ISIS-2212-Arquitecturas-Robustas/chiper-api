@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/apps/inventario"
+  },
+  "include": [
+    "src/**/*.ts",
+    "../../libs/inventario/**/*.ts",
+    "../../libs/shared/**/*.ts"
+  ],
+  "exclude": [
+    "**/*.spec.ts",
+    "../../libs/**/*.spec.ts",
+    "../../test/**/*.ts",
+    "../../src/**/*.ts"
+  ]
+}
