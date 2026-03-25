@@ -1,8 +1,7 @@
 import { Provider } from '@nestjs/common';
-import { DataSource, EntitySchema } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { DATA_SOURCE } from './database.tokens';
-
-type DatabaseEntity = Function | string | EntitySchema;
+import { DatabaseEntity } from './database.types';
 
 function isTrue(value: string | undefined, defaultValue: boolean): boolean {
   if (value === undefined) {

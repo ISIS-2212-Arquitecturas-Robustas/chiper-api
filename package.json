@@ -10,7 +10,7 @@
     "build:logistica": "nest build logistica",
     "build:inventario": "nest build inventario",
     "build:ventas": "nest build ventas",
-    "db:seed": "ts-node -r tsconfig-paths/register scripts/seed-database.ts",
+    "db:seed": "node node_modules/ts-node/dist/bin.js -r tsconfig-paths/register scripts/seed-database.ts",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\" \"test/**/*.ts\" \"scripts/**/*.ts\"",
     "start": "npm run start:logistica",
     "start:dev": "npm run start:logistica:dev",

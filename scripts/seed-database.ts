@@ -1,5 +1,5 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import { Module } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
 import {
   Catalogo,
   Despacho,
@@ -20,7 +20,7 @@ import {
   ProductoExterno,
   Venta,
 } from '../libs/ventas/src/repositories/entities';
-import { createDataSource } from '../libs/shared/database/src';
+import { DatabaseModule } from '../libs/shared/database/src';
 
 const CONNECTION_RETRY_DELAY_MS = parseInt(
   process.env.DB_CONNECT_RETRY_DELAY_MS || '2000',
@@ -37,23 +37,93 @@ process.env.DB_USERNAME ??= 'postgres';
 process.env.DB_PASSWORD ??= 'postgres';
 process.env.DB_NAME ??= 'chiper';
 
-async function initializeDataSourceWithRetry(entities: Function[]) {
+const SEED_ENTITIES = [
+  Catalogo,
+  Despacho,
+  DisponibilidadZona,
+  ItemInventario,
+  ItemPedido,
+  ItemVenta,
+  NotaCredito,
+  Pedido,
+  Producto,
+  ProductoExterno,
+  Promocion,
+  RegistroCompraProductoTienda,
+  RegistroVentaProductoTienda,
+  Venta,
+];
+
+@Module({
+  imports: [DatabaseModule.forRoot(SEED_ENTITIES, { enableSeeder: true })],
+})
+class SeedDatabaseModule {}
+
+async function bootstrapSeedContext() {
+  return NestFactory.createApplicationContext(SeedDatabaseModule, {
+    logger: ['log', 'warn', 'error'],
+  });
+}
+
+function isRetryableConnectionError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+
+  const maybeError = error as {
+    code?: string;
+    message?: string;
+    cause?: unknown;
+  };
+
+  if (
+    maybeError.code &&
+    [
+      'ECONNREFUSED',
+      'ENOTFOUND',
+      'ETIMEDOUT',
+      'EHOSTUNREACH',
+      'ECONNRESET',
+    ].includes(maybeError.code)
+  ) {
+    return true;
+  }
+
+  if (
+    typeof maybeError.message === 'string' &&
+    /connect |Connection terminated unexpectedly|database system is starting up/i.test(
+      maybeError.message,
+    )
+  ) {
+    return true;
+  }
+
+  return isRetryableConnectionError(maybeError.cause);
+}
+
+async function seedDatabase() {
   let lastError: unknown;
 
   for (let attempt = 1; attempt <= CONNECTION_RETRY_ATTEMPTS; attempt += 1) {
-    const dataSource = createDataSource(entities);
+    let app:
+      | Awaited<ReturnType<typeof NestFactory.createApplicationContext>>
+      | undefined;
 
     try {
-      await dataSource.initialize();
-      return dataSource;
+      app = await bootstrapSeedContext();
+      await app.close();
+      return;
     } catch (error) {
       lastError = error;
 
-      if (dataSource.isInitialized) {
-        await dataSource.destroy().catch(() => undefined);
+      if (app) {
+        await app.close().catch(() => undefined);
       }
 
-      if (attempt === CONNECTION_RETRY_ATTEMPTS) {
+      if (
+        attempt === CONNECTION_RETRY_ATTEMPTS ||
+        !isRetryableConnectionError(error)
+      ) {
         break;
       }
 
@@ -67,73 +137,6 @@ async function initializeDataSourceWithRetry(entities: Function[]) {
   }
 
   throw lastError;
-}
-
-async function seedDatabase() {
-  const entities = [
-    Catalogo,
-    Despacho,
-    DisponibilidadZona,
-    ItemInventario,
-    ItemPedido,
-    ItemVenta,
-    NotaCredito,
-    Pedido,
-    Producto,
-    ProductoExterno,
-    Promocion,
-    RegistroCompraProductoTienda,
-    RegistroVentaProductoTienda,
-    Venta,
-  ];
-
-  const dataSource = await initializeDataSourceWithRetry(entities);
-
-  try {
-    await dataSource.synchronize();
-
-    const tables = await dataSource.query(`
-      SELECT EXISTS (
-        SELECT 1
-        FROM information_schema.tables
-        WHERE table_schema = 'public'
-          AND table_name = 'items_inventario'
-      ) AS "exists"
-    `);
-
-    if (tables[0]?.exists) {
-      const rows = await dataSource.query(
-        'SELECT COUNT(*)::int AS count FROM items_inventario',
-      );
-
-      if ((rows[0]?.count ?? 0) > 0) {
-        console.log('Database already seeded. Skipping.');
-        return;
-      }
-    }
-
-    const sqlPath = path.join(
-      __dirname,
-      '../libs/shared/database/src/seed.sql',
-    );
-    const sql = fs.readFileSync(sqlPath, 'utf8');
-    const statements = sql
-      .split(';')
-      .map((statement) => statement.trim())
-      .filter(
-        (statement) => statement.length > 0 && !statement.startsWith('--'),
-      );
-
-    for (const statement of statements) {
-      await dataSource.query(statement);
-    }
-
-    console.log('Database seeded successfully.');
-  } finally {
-    if (dataSource.isInitialized) {
-      await dataSource.destroy();
-    }
-  }
 }
 
 void seedDatabase().catch((error) => {
