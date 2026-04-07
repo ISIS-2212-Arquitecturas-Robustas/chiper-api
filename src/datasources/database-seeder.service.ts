@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import * as fs from 'fs';
 import * as yaml from 'js-yaml';
@@ -28,6 +29,16 @@ interface LoadSeedCounts {
 
 interface LoadSeedConfig {
   load: LoadSeedCounts;
+}
+
+type SeedValue = string | number | null;
+
+interface BatchInsertConfig {
+  tableName: string;
+  columns: string[];
+  rows: SeedValue[][];
+  includeTimestamps?: boolean;
+  batchSize?: number;
 }
 
 /** Sentinel: recognised by batchInsert as a raw SQL expression (not quoted). */
@@ -114,6 +125,7 @@ export class DatabaseSeederService implements OnModuleInit {
       }
 
       const yamlPath = path.join(__dirname, 'load-seed.yaml');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       const config = yaml.load(
         fs.readFileSync(yamlPath, 'utf8'),
       ) as LoadSeedConfig;
@@ -146,9 +158,20 @@ export class DatabaseSeederService implements OnModuleInit {
 
       // ── 1. productos ──────────────────────────────────────────
       const productoIds = this.uuids(counts.productos);
-      await this.batchInsert(
-        `INSERT INTO productos (id, "codigoInterno", "codigoBarras", nombre, marca, categoria, presentacion, "precioBase", "monedaId") VALUES`,
-        productoIds.map((id, i) => [
+      await this.batchInsert({
+        tableName: 'productos',
+        columns: [
+          'id',
+          '"codigoInterno"',
+          '"codigoBarras"',
+          'nombre',
+          'marca',
+          'categoria',
+          'presentacion',
+          '"precioBase"',
+          '"monedaId"',
+        ],
+        rows: productoIds.map((id, i) => [
           id,
           `LOAD-${String(i + 1).padStart(5, '0')}`,
           `${7000000000000 + i}`,
@@ -159,39 +182,59 @@ export class DatabaseSeederService implements OnModuleInit {
           (10 + (i % 90)).toFixed(2),
           MONEDA_ID,
         ]),
-      );
+      });
 
       // ── 2. catalogos ──────────────────────────────────────────
       const catalogoIds = this.uuids(counts.catalogos);
-      await this.batchInsert(
-        `INSERT INTO catalogos (id, "tiendaId", "vigenciaDesde", "vigenciaHasta", zona) VALUES`,
-        catalogoIds.map((id, i) => [
+      await this.batchInsert({
+        tableName: 'catalogos',
+        columns: [
+          'id',
+          '"tiendaId"',
+          '"vigenciaDesde"',
+          '"vigenciaHasta"',
+          'zona',
+        ],
+        rows: catalogoIds.map((id, i) => [
           id,
           TIENDAS[i % TIENDAS.length],
           '2026-01-01 00:00:00',
           '2026-12-31 23:59:59',
           `Zona Load ${i + 1}`,
         ]),
-      );
+      });
 
       // ── 3. catalogos_productos_productos (junction) ───────────
       const junctionCount = Math.min(
         counts.catalogos_productos,
         catalogoIds.length * productoIds.length,
       );
-      await this.batchInsert(
-        `INSERT INTO "catalogos_productos_productos" ("catalogosId", "productosId") VALUES`,
-        Array.from({ length: junctionCount }, (_, i) => [
-          catalogoIds[i % catalogoIds.length],
-          productoIds[i % productoIds.length],
-        ]),
-        false, // no createdAt / updatedAt on this junction table
-      );
+      await this.batchInsert({
+        tableName: '"catalogos_productos_productos"',
+        columns: ['"catalogosId"', '"productosId"'],
+        rows: this.buildCatalogoProductoRows(
+          catalogoIds,
+          productoIds,
+          junctionCount,
+        ),
+        includeTimestamps: false,
+      });
 
       // ── 4. promociones ────────────────────────────────────────
-      await this.batchInsert(
-        `INSERT INTO promociones (id, nombre, "precioPromocional", "monedaId", "productoId", "tiendaIds", inicio, fin, restricciones) VALUES`,
-        this.uuids(counts.promociones).map((id, i) => [
+      await this.batchInsert({
+        tableName: 'promociones',
+        columns: [
+          'id',
+          'nombre',
+          '"precioPromocional"',
+          '"monedaId"',
+          '"productoId"',
+          '"tiendaIds"',
+          'inicio',
+          'fin',
+          'restricciones',
+        ],
+        rows: this.uuids(counts.promociones).map((id, i) => [
           id,
           `Promo Load ${i + 1}`,
           (5 + (i % 40)).toFixed(2),
@@ -202,13 +245,22 @@ export class DatabaseSeederService implements OnModuleInit {
           '2026-06-30 23:59:59',
           (i % 200) + 1,
         ]),
-      );
+      });
 
       // ── 5. pedidos ────────────────────────────────────────────
       const pedidoIds = this.uuids(counts.pedidos);
-      await this.batchInsert(
-        `INSERT INTO pedidos (id, identificador, "tiendaId", "fechaHoraCreacion", "montoTotal", "monedaId", estado) VALUES`,
-        pedidoIds.map((id, i) => [
+      await this.batchInsert({
+        tableName: 'pedidos',
+        columns: [
+          'id',
+          'identificador',
+          '"tiendaId"',
+          '"fechaHoraCreacion"',
+          '"montoTotal"',
+          '"monedaId"',
+          'estado',
+        ],
+        rows: pedidoIds.map((id, i) => [
           id,
           `PED-LOAD-${String(i + 1).padStart(5, '0')}`,
           TIENDAS[i % TIENDAS.length],
@@ -217,12 +269,23 @@ export class DatabaseSeederService implements OnModuleInit {
           MONEDA_ID,
           ESTADOS_PEDIDO[i % ESTADOS_PEDIDO.length],
         ]),
-      );
+      });
 
       // ── 6. items_pedido ───────────────────────────────────────
-      await this.batchInsert(
-        `INSERT INTO items_pedido (id, "pedidoId", "productoId", cantidad, "precioUnitario", descuento, "monedaId", lote, "fechaVencimiento") VALUES`,
-        this.uuids(counts.items_pedido).map((id, i) => [
+      await this.batchInsert({
+        tableName: 'items_pedido',
+        columns: [
+          'id',
+          '"pedidoId"',
+          '"productoId"',
+          'cantidad',
+          '"precioUnitario"',
+          'descuento',
+          '"monedaId"',
+          'lote',
+          '"fechaVencimiento"',
+        ],
+        rows: this.uuids(counts.items_pedido).map((id, i) => [
           id,
           pedidoIds[i % pedidoIds.length],
           productoIds[i % productoIds.length],
@@ -233,12 +296,20 @@ export class DatabaseSeederService implements OnModuleInit {
           `LOTE-LOAD-${i + 1}`,
           '2027-12-31',
         ]),
-      );
+      });
 
       // ── 7. despachos ──────────────────────────────────────────
-      await this.batchInsert(
-        `INSERT INTO despachos (id, "pedidoId", bodega, "horaSalida", "ventanaPrometidaInicio", "ventanaPrometidaFin") VALUES`,
-        this.uuids(counts.despachos).map((id, i) => [
+      await this.batchInsert({
+        tableName: 'despachos',
+        columns: [
+          'id',
+          '"pedidoId"',
+          'bodega',
+          '"horaSalida"',
+          '"ventanaPrometidaInicio"',
+          '"ventanaPrometidaFin"',
+        ],
+        rows: this.uuids(counts.despachos).map((id, i) => [
           id,
           pedidoIds[i % pedidoIds.length],
           `Bodega Load ${(i % 5) + 1}`,
@@ -246,24 +317,41 @@ export class DatabaseSeederService implements OnModuleInit {
           '2026-03-05 10:00:00',
           '2026-03-05 18:00:00',
         ]),
-      );
+      });
 
       // ── 8. disponibilidad_zona ────────────────────────────────
-      await this.batchInsert(
-        `INSERT INTO disponibilidad_zona (id, "catalogoId", "productoId", "cantidadDisponible", "ultimaActualizacion") VALUES`,
-        this.uuids(counts.disponibilidad_zona).map((id, i) => [
+      await this.batchInsert({
+        tableName: 'disponibilidad_zona',
+        columns: [
+          'id',
+          '"catalogoId"',
+          '"productoId"',
+          '"cantidadDisponible"',
+          '"ultimaActualizacion"',
+        ],
+        rows: this.uuids(counts.disponibilidad_zona).map((id, i) => [
           id,
           catalogoIds[i % catalogoIds.length],
           productoIds[i % productoIds.length],
           (i % 500) + 1,
           NOW, // raw SQL sentinel → rendered as NOW()
         ]),
-      );
+      });
 
       // ── 9. notas_credito ──────────────────────────────────────
-      await this.batchInsert(
-        `INSERT INTO notas_credito (id, "pedidoId", "numeroDocumento", fecha, motivo, monto, "monedaId", evidencia) VALUES`,
-        this.uuids(counts.notas_credito).map((id, i) => [
+      await this.batchInsert({
+        tableName: 'notas_credito',
+        columns: [
+          'id',
+          '"pedidoId"',
+          '"numeroDocumento"',
+          'fecha',
+          'motivo',
+          'monto',
+          '"monedaId"',
+          'evidencia',
+        ],
+        rows: this.uuids(counts.notas_credito).map((id, i) => [
           id,
           pedidoIds[i % pedidoIds.length],
           `NC-LOAD-${String(i + 1).padStart(4, '0')}`,
@@ -273,13 +361,21 @@ export class DatabaseSeederService implements OnModuleInit {
           MONEDA_ID,
           `Evidencia load test ${i + 1}`,
         ]),
-      );
+      });
 
       // ── 10. items_inventario ──────────────────────────────────
       const itemInvIds = this.uuids(counts.items_inventario);
-      await this.batchInsert(
-        `INSERT INTO items_inventario (id, "productoId", "tiendaId", cantidad, "precioVenta", "monedaId") VALUES`,
-        itemInvIds.map((id, i) => [
+      await this.batchInsert({
+        tableName: 'items_inventario',
+        columns: [
+          'id',
+          '"productoId"',
+          '"tiendaId"',
+          'cantidad',
+          '"precioVenta"',
+          '"monedaId"',
+        ],
+        rows: itemInvIds.map((id, i) => [
           id,
           productoIds[i % productoIds.length],
           TIENDAS[i % TIENDAS.length],
@@ -287,41 +383,73 @@ export class DatabaseSeederService implements OnModuleInit {
           (5 + (i % 95)).toFixed(2),
           MONEDA_ID_INV,
         ]),
-      );
+      });
 
       // ── 11. registros_compra ──────────────────────────────────
-      await this.batchInsert(
-        `INSERT INTO registros_compra_producto_tienda (id, "tiendaId", "productoId", "compraId", "itemInventarioId", "fechaCompra", cantidad) VALUES`,
-        this.uuids(counts.registros_compra_producto_tienda).map((id, i) => [
-          id,
-          TIENDAS[i % TIENDAS.length],
-          productoIds[i % productoIds.length],
-          uuidv4(),
-          itemInvIds[i % itemInvIds.length],
-          this.hoursAgo(counts.registros_compra_producto_tienda - i),
-          (i % 100) + 1,
-        ]),
-      );
+      await this.batchInsert({
+        tableName: 'registros_compra_producto_tienda',
+        columns: [
+          'id',
+          '"tiendaId"',
+          '"productoId"',
+          '"compraId"',
+          '"itemInventarioId"',
+          '"fechaCompra"',
+          'cantidad',
+        ],
+        rows: this.uuids(counts.registros_compra_producto_tienda).map(
+          (id, i) => [
+            id,
+            TIENDAS[i % TIENDAS.length],
+            productoIds[i % productoIds.length],
+            uuidv4(),
+            itemInvIds[i % itemInvIds.length],
+            this.hoursAgo(counts.registros_compra_producto_tienda - i),
+            (i % 100) + 1,
+          ],
+        ),
+      });
 
       // ── 12. registros_venta ───────────────────────────────────
-      await this.batchInsert(
-        `INSERT INTO registros_venta_producto_tienda (id, "tiendaId", "productoId", "ventaId", "itemInventarioId", "fechaVenta", cantidad) VALUES`,
-        this.uuids(counts.registros_venta_producto_tienda).map((id, i) => [
-          id,
-          TIENDAS[i % TIENDAS.length],
-          productoIds[i % productoIds.length],
-          uuidv4(),
-          itemInvIds[i % itemInvIds.length],
-          this.hoursAgo(counts.registros_venta_producto_tienda - i),
-          (i % 50) + 1,
-        ]),
-      );
+      await this.batchInsert({
+        tableName: 'registros_venta_producto_tienda',
+        columns: [
+          'id',
+          '"tiendaId"',
+          '"productoId"',
+          '"ventaId"',
+          '"itemInventarioId"',
+          '"fechaVenta"',
+          'cantidad',
+        ],
+        rows: this.uuids(counts.registros_venta_producto_tienda).map(
+          (id, i) => [
+            id,
+            TIENDAS[i % TIENDAS.length],
+            productoIds[i % productoIds.length],
+            uuidv4(),
+            itemInvIds[i % itemInvIds.length],
+            this.hoursAgo(counts.registros_venta_producto_tienda - i),
+            (i % 50) + 1,
+          ],
+        ),
+      });
 
       // ── 13. productos_externos ────────────────────────────────
       const prodExternoIds = this.uuids(counts.productos_externos);
-      await this.batchInsert(
-        `INSERT INTO productos_externos (id, "tiendaId", "codigoBarras", nombre, categoria, "precioBase", "monedaId", cantidad) VALUES`,
-        prodExternoIds.map((id, i) => [
+      await this.batchInsert({
+        tableName: 'productos_externos',
+        columns: [
+          'id',
+          '"tiendaId"',
+          '"codigoBarras"',
+          'nombre',
+          'categoria',
+          '"precioBase"',
+          '"monedaId"',
+          'cantidad',
+        ],
+        rows: prodExternoIds.map((id, i) => [
           id,
           TIENDAS[i % TIENDAS.length],
           `EXT-${8000000000000 + i}`,
@@ -331,25 +459,35 @@ export class DatabaseSeederService implements OnModuleInit {
           MONEDA_ID_INV,
           (i % 100) + 1,
         ]),
-      );
+      });
 
       // ── 14. ventas ────────────────────────────────────────────
       const ventaIds = this.uuids(counts.ventas);
-      await this.batchInsert(
-        `INSERT INTO ventas (id, "tiendaId", "fechaHora", total, "monedaId") VALUES`,
-        ventaIds.map((id, i) => [
+      await this.batchInsert({
+        tableName: 'ventas',
+        columns: ['id', '"tiendaId"', '"fechaHora"', 'total', '"monedaId"'],
+        rows: ventaIds.map((id, i) => [
           id,
           TIENDAS[i % TIENDAS.length],
           this.hoursAgo(counts.ventas - i),
           (10 + (i % 300)).toFixed(2),
           MONEDA_ID_INV,
         ]),
-      );
+      });
 
       // ── 15. items_venta ───────────────────────────────────────
-      await this.batchInsert(
-        `INSERT INTO items_venta (id, "ventaId", "productoExternoId", "productoId", cantidad, "precioUnitario", "monedaId") VALUES`,
-        this.uuids(counts.items_venta).map((id, i) => [
+      await this.batchInsert({
+        tableName: 'items_venta',
+        columns: [
+          'id',
+          '"ventaId"',
+          '"productoExternoId"',
+          '"productoId"',
+          'cantidad',
+          '"precioUnitario"',
+          '"monedaId"',
+        ],
+        rows: this.uuids(counts.items_venta).map((id, i) => [
           id,
           ventaIds[i % ventaIds.length],
           prodExternoIds[i % prodExternoIds.length],
@@ -358,7 +496,7 @@ export class DatabaseSeederService implements OnModuleInit {
           (5 + (i % 50)).toFixed(2),
           MONEDA_ID_INV,
         ]),
-      );
+      });
 
       this.logger.log('✅ Load seed completed successfully');
     } catch (error) {
@@ -392,26 +530,47 @@ export class DatabaseSeederService implements OnModuleInit {
       .slice(0, 19);
   }
 
+  /** Generate unique catalog/product pairs up to the requested count. */
+  private buildCatalogoProductoRows(
+    catalogoIds: string[],
+    productoIds: string[],
+    count: number,
+  ): SeedValue[][] {
+    const rows: SeedValue[][] = [];
+
+    for (const catalogoId of catalogoIds) {
+      for (const productoId of productoIds) {
+        rows.push([catalogoId, productoId]);
+
+        if (rows.length === count) {
+          return rows;
+        }
+      }
+    }
+
+    return rows;
+  }
+
   /**
    * Build and execute batched INSERT statements.
    *
-   * @param insertPrefix      Full "INSERT INTO … (cols) VALUES" string.
-   *                          Must NOT include createdAt / updatedAt columns –
-   *                          they are appended automatically when appendTimestamps=true.
-   * @param rows              2-D array of column values.
-   *                          Use the {@link NOW} constant for a raw NOW() expression.
-   *                          Use `null` for SQL NULL.
-   * @param appendTimestamps  When true (default), appends NOW(), NOW() for
-   *                          createdAt and updatedAt. Pass false for junction
-   *                          tables that have no timestamp columns.
-   * @param batchSize         Max rows per statement (default 500).
+   * @param config            Insert configuration with explicit table and columns.
+   *                          createdAt / updatedAt columns are appended when
+   *                          includeTimestamps=true.
    */
-  private async batchInsert(
-    insertPrefix: string,
-    rows: (string | number | null)[][],
-    appendTimestamps = true,
-    batchSize = 500,
-  ): Promise<void> {
+  private async batchInsert(config: BatchInsertConfig): Promise<void> {
+    const {
+      tableName,
+      columns,
+      rows,
+      includeTimestamps = true,
+      batchSize = 500,
+    } = config;
+    const insertColumns = includeTimestamps
+      ? [...columns, '"createdAt"', '"updatedAt"']
+      : columns;
+    const insertPrefix = `INSERT INTO ${tableName} (${insertColumns.join(', ')}) VALUES`;
+
     for (let start = 0; start < rows.length; start += batchSize) {
       const batch = rows.slice(start, start + batchSize);
 
@@ -423,7 +582,7 @@ export class DatabaseSeederService implements OnModuleInit {
           return `'${String(col).replace(/'/g, "''")}'`; // escape single quotes
         });
 
-        if (appendTimestamps) {
+        if (includeTimestamps) {
           colsSql.push('NOW()', 'NOW()');
         }
 
