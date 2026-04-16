@@ -1,27 +1,20 @@
-import { DynamicModule, Global, Module, Provider } from '@nestjs/common';
-import { DatabaseSeederService } from './database-seeder.service';
+import { DynamicModule, Global, Module } from '@nestjs/common';
+import { EntitySchema } from 'typeorm';
 import { DatabaseLifecycle } from './database.lifecycle';
 import { createDatabaseProviders } from './database.providers';
-import { DatabaseEntity, DatabaseModuleOptions } from './database.types';
+
+type DatabaseEntity = Function | string | EntitySchema;
 
 @Global()
 @Module({})
 export class DatabaseModule {
-  static forRoot(
-    entities: DatabaseEntity[],
-    options: DatabaseModuleOptions = {},
-  ): DynamicModule {
+  static forRoot(entities: DatabaseEntity[]): DynamicModule {
     const providers = createDatabaseProviders(entities);
-    const additionalProviders: Provider[] = [DatabaseLifecycle];
-
-    if (options.enableSeeder) {
-      additionalProviders.push(DatabaseSeederService);
-    }
 
     return {
       module: DatabaseModule,
       global: true,
-      providers: [...providers, ...additionalProviders],
+      providers: [...providers, DatabaseLifecycle],
       exports: providers,
     };
   }
