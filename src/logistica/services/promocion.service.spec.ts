@@ -44,7 +44,12 @@ describe('PromocionService', () => {
       const dto: CreatePromocionDto = {
         nombre: 'Promoción de descuento',
         precioPromocional: 99.99,
-        monedaId: 'usd-1',
+        monedaId: '6f8e32fe-bf41-47a7-aa78-5f275c88f4eb',
+        productoId: '7ddc3e3d-717e-4256-bd84-1df1f765a0ad',
+        tiendaIds: [
+          '623c4a0d-a2a4-45c6-808d-858d3794f62f',
+          '08a6e58a-16ca-4d97-928a-1d08b53cad9c',
+        ],
         inicio: new Date(),
         fin: new Date(),
         restricciones: 2,
@@ -52,6 +57,7 @@ describe('PromocionService', () => {
       const entity = {
         id: 'promo-1',
         ...dto,
+        tiendas: dto.tiendaIds.map((tiendaId) => ({ tiendaId })),
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -65,6 +71,7 @@ describe('PromocionService', () => {
         expect.objectContaining({
           id: 'promo-1',
           nombre: 'Promoción de descuento',
+          tiendaIds: dto.tiendaIds,
         }),
       );
     });
@@ -78,10 +85,12 @@ describe('PromocionService', () => {
           id: 'promo-1',
           nombre: 'Promo 1',
           precioPromocional: 99.99,
-          monedaId: 'usd-1',
+          monedaId: '6f8e32fe-bf41-47a7-aa78-5f275c88f4eb',
+          productoId: '7ddc3e3d-717e-4256-bd84-1df1f765a0ad',
+          tiendas: [{ tiendaId: '623c4a0d-a2a4-45c6-808d-858d3794f62f' }],
           inicio: new Date(),
           fin: new Date(),
-          restricciones: 'Sin restricciones',
+          restricciones: 0,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -96,6 +105,7 @@ describe('PromocionService', () => {
       expect(result[0]).toEqual(
         expect.objectContaining({
           id: 'promo-1',
+          tiendaIds: ['623c4a0d-a2a4-45c6-808d-858d3794f62f'],
         }),
       );
     });
@@ -115,10 +125,12 @@ describe('PromocionService', () => {
         id: 'promo-1',
         nombre: 'Promoción test',
         precioPromocional: 99.99,
-        monedaId: 'usd-1',
+        monedaId: '6f8e32fe-bf41-47a7-aa78-5f275c88f4eb',
+        productoId: '7ddc3e3d-717e-4256-bd84-1df1f765a0ad',
+        tiendas: [{ tiendaId: '623c4a0d-a2a4-45c6-808d-858d3794f62f' }],
         inicio: new Date(),
         fin: new Date(),
-        restricciones: 'Sin restricciones',
+        restricciones: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -132,6 +144,7 @@ describe('PromocionService', () => {
         expect.objectContaining({
           id: 'promo-1',
           nombre: 'Promoción test',
+          tiendaIds: ['623c4a0d-a2a4-45c6-808d-858d3794f62f'],
         }),
       );
     });
@@ -154,10 +167,12 @@ describe('PromocionService', () => {
         id: 'promo-1',
         nombre: 'Original Name',
         precioPromocional: 99.99,
-        monedaId: 'usd-1',
+        monedaId: '6f8e32fe-bf41-47a7-aa78-5f275c88f4eb',
+        productoId: '7ddc3e3d-717e-4256-bd84-1df1f765a0ad',
+        tiendas: [{ tiendaId: '623c4a0d-a2a4-45c6-808d-858d3794f62f' }],
         inicio: new Date(),
         fin: new Date(),
-        restricciones: 'Sin restricciones',
+        restricciones: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -187,10 +202,12 @@ describe('PromocionService', () => {
         id: 'promo-1',
         nombre: 'Promoción',
         precioPromocional: 99.99,
-        monedaId: 'usd-1',
+        monedaId: '6f8e32fe-bf41-47a7-aa78-5f275c88f4eb',
+        productoId: '7ddc3e3d-717e-4256-bd84-1df1f765a0ad',
+        tiendas: [{ tiendaId: '623c4a0d-a2a4-45c6-808d-858d3794f62f' }],
         inicio: new Date(),
         fin: new Date(),
-        restricciones: 'Sin restricciones',
+        restricciones: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       };

@@ -55,4 +55,56 @@ export class ProductoRepository {
     const result = await this.repository.delete(id);
     return (result.affected ?? 0) > 0;
   }
+
+  /**
+   * HU 1 — Retorna los productos que:
+   *   A) la tienda haya pedido alguna vez,
+   *   B) estén actualmente en promoción para esa tienda, y
+   *   C) tengan disponibilidad > 0 en el catálogo de la zona indicada.
+   */
+  async findProductosDisponiblesParaTendero(
+    tiendaId: string,
+    zona: string,
+  ): Promise<Producto[]> {
+    const now = new Date();
+    return this.repository
+      .createQueryBuilder('producto')
+      .where(
+        // A: alguna vez pedido por esta tienda
+        `EXISTS (
+          SELECT 1
+          FROM items_pedido ip
+          JOIN pedidos p ON p.id = ip."pedidoId"
+          WHERE ip."productoId" = producto.id
+            AND p."tiendaId" = :tiendaId
+        )`,
+        { tiendaId },
+      )
+      .andWhere(
+        // B: en promoción activa para esta tienda
+        `EXISTS (
+          SELECT 1
+          FROM promociones promo
+          JOIN promocion_tiendas pt ON pt."promocionId" = promo.id
+          WHERE promo."productoId" = producto.id
+            AND promo.inicio <= :now
+            AND promo.fin >= :now
+            AND pt."tiendaId" = :tiendaId
+        )`,
+        { now, tiendaId },
+      )
+      .andWhere(
+        // C: disponible en catálogo de la zona solicitada
+        `EXISTS (
+          SELECT 1
+          FROM disponibilidad_zona dz
+          JOIN catalogos cat ON cat.id = dz."catalogoId"
+          WHERE dz."productoId" = producto.id
+            AND dz."cantidadDisponible" > 0
+            AND cat.zona = :zona
+        )`,
+        { zona },
+      )
+      .getMany();
+  }
 }

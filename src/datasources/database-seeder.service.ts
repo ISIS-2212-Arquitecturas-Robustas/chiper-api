@@ -155,10 +155,7 @@ export class DatabaseSeederService implements OnModuleInit {
   }
 
   private async applyBaseSeed(queryRunner: QueryRunner): Promise<void> {
-    const sql = fs.readFileSync(
-      path.join(__dirname, 'seed.sql'),
-      'utf8',
-    );
+    const sql = fs.readFileSync(path.join(__dirname, 'seed.sql'), 'utf8');
     const statements = this.extractSqlStatements(sql).map((s) =>
       this.makeStatementIdempotent(s),
     );
@@ -176,7 +173,10 @@ export class DatabaseSeederService implements OnModuleInit {
     const loadConfig = config.load ?? {};
 
     return LOAD_SEED_KEYS.reduce(
-      (counts, key) => ({ ...counts, [key]: this.parseCount(loadConfig[key], key) }),
+      (counts, key) => ({
+        ...counts,
+        [key]: this.parseCount(loadConfig[key], key),
+      }),
       {} as LoadSeedCounts,
     );
   }
@@ -278,8 +278,16 @@ export class DatabaseSeederService implements OnModuleInit {
     catalogoIds: string[],
     productoIds: string[],
   ): Promise<void> {
-    this.ensureReferences(catalogoIds, 'catalogos_productos_productos', 'catalogos');
-    this.ensureReferences(productoIds, 'catalogos_productos_productos', 'productos');
+    this.ensureReferences(
+      catalogoIds,
+      'catalogos_productos_productos',
+      'catalogos',
+    );
+    this.ensureReferences(
+      productoIds,
+      'catalogos_productos_productos',
+      'productos',
+    );
 
     const existingPairs = await this.getCatalogoProductoPairs(queryRunner);
     const missingCount = this.getMissingCount(existingPairs.size, targetCount);
@@ -515,10 +523,21 @@ export class DatabaseSeederService implements OnModuleInit {
     itemInventarioIds: string[],
     productoIds: string[],
   ): Promise<void> {
-    this.ensureReferences(itemInventarioIds, 'registros_compra_producto_tienda', 'items_inventario');
-    this.ensureReferences(productoIds, 'registros_compra_producto_tienda', 'productos');
+    this.ensureReferences(
+      itemInventarioIds,
+      'registros_compra_producto_tienda',
+      'items_inventario',
+    );
+    this.ensureReferences(
+      productoIds,
+      'registros_compra_producto_tienda',
+      'productos',
+    );
 
-    const existingIds = await this.getIds(queryRunner, 'registros_compra_producto_tienda');
+    const existingIds = await this.getIds(
+      queryRunner,
+      'registros_compra_producto_tienda',
+    );
     const missingCount = this.getMissingCount(existingIds.length, targetCount);
 
     if (missingCount === 0) return;
@@ -544,10 +563,21 @@ export class DatabaseSeederService implements OnModuleInit {
     itemInventarioIds: string[],
     productoIds: string[],
   ): Promise<void> {
-    this.ensureReferences(itemInventarioIds, 'registros_venta_producto_tienda', 'items_inventario');
-    this.ensureReferences(productoIds, 'registros_venta_producto_tienda', 'productos');
+    this.ensureReferences(
+      itemInventarioIds,
+      'registros_venta_producto_tienda',
+      'items_inventario',
+    );
+    this.ensureReferences(
+      productoIds,
+      'registros_venta_producto_tienda',
+      'productos',
+    );
 
-    const existingIds = await this.getIds(queryRunner, 'registros_venta_producto_tienda');
+    const existingIds = await this.getIds(
+      queryRunner,
+      'registros_venta_producto_tienda',
+    );
     const missingCount = this.getMissingCount(existingIds.length, targetCount);
 
     if (missingCount === 0) return;
@@ -633,7 +663,11 @@ export class DatabaseSeederService implements OnModuleInit {
     productoExternoIds: string[],
   ): Promise<void> {
     this.ensureReferences(ventaIds, 'items_venta', 'ventas');
-    this.ensureReferences(productoExternoIds, 'items_venta', 'productos_externos');
+    this.ensureReferences(
+      productoExternoIds,
+      'items_venta',
+      'productos_externos',
+    );
 
     const existingIds = await this.getIds(queryRunner, 'items_venta');
     const missingCount = this.getMissingCount(existingIds.length, targetCount);
@@ -691,9 +725,7 @@ export class DatabaseSeederService implements OnModuleInit {
     const rows = (await queryRunner.query(
       'SELECT "catalogosId", "productosId" FROM "catalogos_productos_productos" ORDER BY "catalogosId", "productosId"',
     )) as Array<{ catalogosId: string; productosId: string }>;
-    return new Set(
-      rows.map((row) => `${row.catalogosId}:${row.productosId}`),
-    );
+    return new Set(rows.map((row) => `${row.catalogosId}:${row.productosId}`));
   }
 
   private buildMissingCatalogoProductoPairs(

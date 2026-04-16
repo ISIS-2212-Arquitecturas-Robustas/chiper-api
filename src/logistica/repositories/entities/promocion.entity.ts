@@ -4,10 +4,12 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Producto } from './producto.entity';
+import { PromocionTienda } from './promocion-tienda.entity';
 
 @Entity('promociones')
 export class Promocion {
@@ -25,9 +27,6 @@ export class Promocion {
 
   @Column('uuid')
   productoId: string;
-
-  @Column('json')
-  tiendaIds: string[];
 
   @Column('timestamp')
   inicio: Date;
@@ -47,4 +46,10 @@ export class Promocion {
   @ManyToOne(() => Producto, (producto) => producto.promociones)
   @JoinColumn({ name: 'productoId' })
   producto: Producto;
+
+  @OneToMany(() => PromocionTienda, (promocionTienda) => promocionTienda.promocion, {
+    cascade: true,
+    eager: true,
+  })
+  tiendas: PromocionTienda[];
 }

@@ -43,3 +43,6 @@ export * from './disponibilidad-zona/update-disponibilidad-zona.dto';
 // Relaciones
 export * from './catalogo-producto/add-producto-to-catalogo.dto';
 export * from './catalogo-promocion/add-promocion-to-catalogo.dto';
+
+// Tendero
+export * from './tendero/query-productos-disponibles.dto';
