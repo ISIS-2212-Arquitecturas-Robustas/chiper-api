@@ -167,4 +167,28 @@ describe('ProductoRepository', () => {
       expect(result).toBe(false);
     });
   });
+
+  describe('findProductosDisponiblesParaTendero', () => {
+    it('should build query and return available productos for tendero', async () => {
+      const productos: Producto[] = [];
+      const queryBuilder = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(productos),
+      };
+
+      typeormRepo.createQueryBuilder.mockReturnValue(queryBuilder as any);
+
+      const result = await repository.findProductosDisponiblesParaTendero(
+        '9a2f2e7b-40c4-4c5f-a37c-baf722e18ab9',
+        'Zona Norte',
+      );
+
+      expect(typeormRepo.createQueryBuilder).toHaveBeenCalledWith('producto');
+      expect(queryBuilder.where).toHaveBeenCalledTimes(1);
+      expect(queryBuilder.andWhere).toHaveBeenCalledTimes(2);
+      expect(queryBuilder.getMany).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(productos);
+    });
+  });
 });

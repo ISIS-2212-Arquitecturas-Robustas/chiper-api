@@ -55,4 +55,51 @@ export class ProductoRepository {
     const result = await this.repository.delete(id);
     return (result.affected ?? 0) > 0;
   }
+
+  async findProductosDisponiblesParaTendero(
+    tiendaId: string,
+    zona: string,
+  ): Promise<Producto[]> {
+    const now = new Date();
+
+    return this.repository
+      .createQueryBuilder('producto')
+      .where(
+        `EXISTS (
+          SELECT 1
+          FROM items_pedido ip
+          JOIN pedidos p ON p.id = ip."pedidoId"
+          WHERE ip."productoId" = producto.id
+            AND p."tiendaId" = :tiendaId
+        )`,
+        { tiendaId },
+      )
+      .andWhere(
+        `EXISTS (
+          SELECT 1
+          FROM promociones promo
+          WHERE promo."productoId" = producto.id
+            AND promo.inicio <= :now
+            AND promo.fin >= :now
+            AND EXISTS (
+              SELECT 1
+              FROM jsonb_array_elements_text(promo."tiendaIds"::jsonb) AS tid
+              WHERE tid = :tiendaId
+            )
+        )`,
+        { now, tiendaId },
+      )
+      .andWhere(
+        `EXISTS (
+          SELECT 1
+          FROM disponibilidad_zona dz
+          JOIN catalogos cat ON cat.id = dz."catalogoId"
+          WHERE dz."productoId" = producto.id
+            AND dz."cantidadDisponible" > 0
+            AND cat.zona = :zona
+        )`,
+        { zona },
+      )
+      .getMany();
+  }
 }

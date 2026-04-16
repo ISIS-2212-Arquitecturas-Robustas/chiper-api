@@ -498,7 +498,12 @@
                 "url": {
                   "raw": "{{base_url}}/logistics/catalogos/{{catalogo_id}}/productos",
                   "host": ["{{base_url}}"],
-                  "path": ["logistics", "catalogos", "{{catalogo_id}}", "productos"]
+                  "path": [
+                    "logistics",
+                    "catalogos",
+                    "{{catalogo_id}}",
+                    "productos"
+                  ]
                 },
                 "description": "Add a producto to catalogo"
               },
@@ -512,7 +517,12 @@
                 "url": {
                   "raw": "{{base_url}}/logistics/catalogos/{{catalogo_id}}/productos",
                   "host": ["{{base_url}}"],
-                  "path": ["logistics", "catalogos", "{{catalogo_id}}", "productos"]
+                  "path": [
+                    "logistics",
+                    "catalogos",
+                    "{{catalogo_id}}",
+                    "productos"
+                  ]
                 },
                 "description": "Get productos in catalogo"
               },
@@ -526,7 +536,13 @@
                 "url": {
                   "raw": "{{base_url}}/logistics/catalogos/{{catalogo_id}}/productos/{{producto_id}}",
                   "host": ["{{base_url}}"],
-                  "path": ["logistics", "catalogos", "{{catalogo_id}}", "productos", "{{producto_id}}"]
+                  "path": [
+                    "logistics",
+                    "catalogos",
+                    "{{catalogo_id}}",
+                    "productos",
+                    "{{producto_id}}"
+                  ]
                 },
                 "description": "Remove producto from catalogo"
               },
@@ -675,7 +691,11 @@
                 "url": {
                   "raw": "{{base_url}}/logistics/disponibilidad-zona/{{disponibilidad_zona_id}}",
                   "host": ["{{base_url}}"],
-                  "path": ["logistics", "disponibilidad-zona", "{{disponibilidad_zona_id}}"]
+                  "path": [
+                    "logistics",
+                    "disponibilidad-zona",
+                    "{{disponibilidad_zona_id}}"
+                  ]
                 },
                 "description": "Get a specific disponibilidad zona by ID"
               },
@@ -698,7 +718,11 @@
                 "url": {
                   "raw": "{{base_url}}/logistics/disponibilidad-zona/{{disponibilidad_zona_id}}",
                   "host": ["{{base_url}}"],
-                  "path": ["logistics", "disponibilidad-zona", "{{disponibilidad_zona_id}}"]
+                  "path": [
+                    "logistics",
+                    "disponibilidad-zona",
+                    "{{disponibilidad_zona_id}}"
+                  ]
                 },
                 "description": "Update a disponibilidad zona"
               },
@@ -712,7 +736,11 @@
                 "url": {
                   "raw": "{{base_url}}/logistics/disponibilidad-zona/{{disponibilidad_zona_id}}",
                   "host": ["{{base_url}}"],
-                  "path": ["logistics", "disponibilidad-zona", "{{disponibilidad_zona_id}}"]
+                  "path": [
+                    "logistics",
+                    "disponibilidad-zona",
+                    "{{disponibilidad_zona_id}}"
+                  ]
                 },
                 "description": "Delete a disponibilidad zona"
               },
@@ -1182,7 +1210,11 @@
                 "url": {
                   "raw": "{{base_url}}/ventas/productos-externos/{{producto_externo_id}}",
                   "host": ["{{base_url}}"],
-                  "path": ["ventas", "productos-externos", "{{producto_externo_id}}"]
+                  "path": [
+                    "ventas",
+                    "productos-externos",
+                    "{{producto_externo_id}}"
+                  ]
                 },
                 "description": "Get a specific external product by ID"
               },
@@ -1205,7 +1237,11 @@
                 "url": {
                   "raw": "{{base_url}}/ventas/productos-externos/{{producto_externo_id}}",
                   "host": ["{{base_url}}"],
-                  "path": ["ventas", "productos-externos", "{{producto_externo_id}}"]
+                  "path": [
+                    "ventas",
+                    "productos-externos",
+                    "{{producto_externo_id}}"
+                  ]
                 },
                 "description": "Update an external product (partial update)"
               },
@@ -1219,7 +1255,11 @@
                 "url": {
                   "raw": "{{base_url}}/ventas/productos-externos/{{producto_externo_id}}",
                   "host": ["{{base_url}}"],
-                  "path": ["ventas", "productos-externos", "{{producto_externo_id}}"]
+                  "path": [
+                    "ventas",
+                    "productos-externos",
+                    "{{producto_externo_id}}"
+                  ]
                 },
                 "description": "Delete an external product"
               },
@@ -1406,57 +1446,57 @@
     },
     {
       "key": "item_id",
-      "value": "11111111-1111-1111-1111-111111111111",
+      "value": "11111111-1111-4111-8111-111111111111",
       "type": "string"
     },
     {
       "key": "compra_id",
-      "value": "dddddddd-dddd-dddd-dddd-dddddddddddd",
+      "value": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
       "type": "string"
     },
     {
       "key": "venta_id",
-      "value": "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee",
+      "value": "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
       "type": "string"
     },
     {
       "key": "compra_registro_id",
-      "value": "c1111111-1111-1111-1111-111111111111",
+      "value": "c1111111-1111-4111-8111-111111111111",
       "type": "string"
     },
     {
       "key": "venta_registro_id",
-      "value": "v1111111-1111-1111-1111-111111111111",
+      "value": "f1111111-1111-4111-8111-111111111111",
       "type": "string"
     },
     {
       "key": "catalogo_id",
-      "value": "cat11111-1111-1111-1111-111111111111",
+      "value": "ca711111-1111-4111-8111-111111111111",
       "type": "string"
     },
     {
       "key": "despacho_id",
-      "value": "des11111-1111-1111-1111-111111111111",
+      "value": "de511111-1111-4111-8111-111111111111",
       "type": "string"
     },
     {
       "key": "pedido_id",
-      "value": "ped11111-1111-1111-1111-111111111111",
+      "value": "ed111111-1111-4111-8111-111111111111",
       "type": "string"
     },
     {
       "key": "promocion_id",
-      "value": "pro11111-1111-1111-1111-111111111111",
+      "value": "f0a11111-1111-4111-8111-111111111111",
       "type": "string"
     },
     {
       "key": "nota_credito_id",
-      "value": "not11111-1111-1111-1111-111111111111",
+      "value": "a0c11111-1111-4111-8111-111111111111",
       "type": "string"
     },
     {
       "key": "disponibilidad_zona_id",
-      "value": "dis11111-1111-1111-1111-111111111111",
+      "value": "d2111111-1111-4111-8111-111111111111",
       "type": "string"
     },
     {
