@@ -49,9 +49,15 @@ INSERT INTO "catalogos_productos_productos" ("catalogosId", "productosId") VALUE
 ('ca722222-2222-4222-8222-222222222222', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaad');
 
 -- Promociones
-INSERT INTO promociones (id, nombre, "precioPromocional", "monedaId", "productoId", "tiendaIds", inicio, fin, restricciones, "createdAt", "updatedAt") VALUES
-('f0a11111-1111-4111-8111-111111111111', 'Promoción Producto 1', 20.00, 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', '["bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"]', '2026-02-01 00:00:00', '2026-02-28 23:59:59', 100, NOW(), NOW()),
-('f0a22222-2222-4222-8222-222222222222', 'Promoción Producto 2', 12.00, 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab', '["bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbc"]', '2026-02-01 00:00:00', '2026-02-28 23:59:59', 50, NOW(), NOW());
+INSERT INTO promociones (id, nombre, "precioPromocional", "monedaId", "productoId", inicio, fin, restricciones, "createdAt", "updatedAt") VALUES
+('f0a11111-1111-4111-8111-111111111111', 'Promoción Producto 1', 20.00, 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', '2026-02-01 00:00:00', '2026-02-28 23:59:59', 100, NOW(), NOW()),
+('f0a22222-2222-4222-8222-222222222222', 'Promoción Producto 2', 12.00, 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab', '2026-02-01 00:00:00', '2026-02-28 23:59:59', 50, NOW(), NOW());
+
+-- Promocion Tiendas
+INSERT INTO promocion_tiendas (id, "promocionId", "tiendaId") VALUES
+('ab111111-1111-4111-8111-111111111111', 'f0a11111-1111-4111-8111-111111111111', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'),
+('ab222222-2222-4222-8222-222222222222', 'f0a22222-2222-4222-8222-222222222222', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'),
+('ab333333-3333-4333-8333-333333333333', 'f0a22222-2222-4222-8222-222222222222', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbc');
 
 -- Pedidos
 INSERT INTO pedidos (id, identificador, "tiendaId", "fechaHoraCreacion", "montoTotal", "monedaId", estado, "createdAt", "updatedAt") VALUES

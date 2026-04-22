@@ -321,23 +321,30 @@ export class DatabaseSeederService implements OnModuleInit {
     if (missingCount === 0) return;
 
     const startIndex = existingIds.length;
+    const insertedPromocionIds = this.uuids(missingCount);
 
     await this.batchInsert(
       queryRunner,
-      'INSERT INTO promociones (id, nombre, "precioPromocional", "monedaId", "productoId", "tiendaIds", inicio, fin, restricciones) VALUES',
-      this.uuids(missingCount).map((id, index) => [
+      'INSERT INTO promociones (id, nombre, "precioPromocional", "monedaId", "productoId", inicio, fin, restricciones) VALUES',
+      insertedPromocionIds.map((id, index) => [
         id,
         `Promo Load ${startIndex + index + 1}`,
         (5 + (index % 40)).toFixed(2),
         this.logisticaMonedaId,
         productoIds[index % productoIds.length],
-        JSON.stringify([
-          this.tiendaIds[index % this.tiendaIds.length],
-          this.tiendaIds[(index + 1) % this.tiendaIds.length],
-        ]),
         '2026-03-01 00:00:00',
         '2026-06-30 23:59:59',
         (index % 200) + 1,
+      ]),
+    );
+
+    await this.batchInsert(
+      queryRunner,
+      'INSERT INTO promocion_tiendas (id, "promocionId", "tiendaId") VALUES',
+      insertedPromocionIds.map((promocionId, index) => [
+        randomUUID(),
+        promocionId,
+        this.tiendaIds[index % this.tiendaIds.length],
       ]),
     );
   }
