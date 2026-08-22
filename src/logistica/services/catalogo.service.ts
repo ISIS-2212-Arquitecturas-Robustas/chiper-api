@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { TiendaClientMock } from '../clients';
+import { TiendaService } from '../../identificacion/services';
 import {
   CatalogoResponseDto,
   CreateCatalogoDto,
@@ -17,11 +17,12 @@ import { Catalogo } from '../repositories/entities';
 export class CatalogoService {
   constructor(
     private readonly catalogoRepository: CatalogoRepository,
-    private readonly tiendaClient: TiendaClientMock,
+    private readonly tiendaService: TiendaService,
   ) {}
 
   async create(dto: CreateCatalogoDto): Promise<CatalogoResponseDto> {
-    const tiendaExists = await this.tiendaClient.exists(dto.tiendaId);
+    const tiendaExists = await this.tiendaService.exists(dto.tiendaId);
+
     if (!tiendaExists) {
       throw new BadRequestException(`Tienda con id ${dto.tiendaId} no existe`);
     }
@@ -37,9 +38,11 @@ export class CatalogoService {
 
   async findById(id: string): Promise<CatalogoResponseDto> {
     const catalogo = await this.catalogoRepository.findById(id);
+
     if (!catalogo) {
       throw new NotFoundException(`Catalogo con id ${id} no encontrado`);
     }
+
     return this.mapToResponse(catalogo);
   }
 
@@ -48,6 +51,7 @@ export class CatalogoService {
     dto: UpdateCatalogoDto,
   ): Promise<CatalogoResponseDto> {
     const catalogo = await this.catalogoRepository.findById(id);
+
     if (!catalogo) {
       throw new NotFoundException(`Catalogo con id ${id} no encontrado`);
     }
@@ -58,6 +62,7 @@ export class CatalogoService {
 
   async delete(id: string): Promise<void> {
     const catalogo = await this.catalogoRepository.findById(id);
+
     if (!catalogo) {
       throw new NotFoundException(`Catalogo con id ${id} no encontrado`);
     }
