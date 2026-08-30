@@ -12,8 +12,8 @@ load:
   # =============================================================
 
   # --- Dimensiones del negocio ---
-  tiendas: 5          # placeholder — ¿cuántas tiendas modela su ciudad?
-  zonas: 3            # placeholder — ¿cuántas zonas y cuál es la "cabeza"?
+  tiendas: 50          # placeholder — ¿cuántas tiendas modela su ciudad?
+  zonas: 5            # placeholder — ¿cuántas zonas y cuál es la "cabeza"?
 
   # Distribución de la actividad sobre tiendas/zonas/productos.
   # Sin esta llave el seeder reparte todo de forma uniforme (round-robin).
@@ -24,22 +24,22 @@ load:
   #   fraccion_cabeza: 0.2   # tamaño de la cabeza respecto del pool
 
   # --- Logística ---  (placeholders — ajuste cada conteo y su razón)
-  productos: 100
-  catalogos: 10
-  catalogos_productos: 200
+  productos: 500
+  catalogos: 50
+  catalogos_productos: 500
   promociones: 20
-  pedidos: 200
-  items_pedido: 400
-  despachos: 100
-  disponibilidad_zona: 200
-  notas_credito: 20
+  pedidos: 1000
+  items_pedido: 5000
+  despachos: 500
+  disponibilidad_zona: 250
+  notas_credito: 100
 
   # --- Inventario ---
-  items_inventario: 100
-  registros_compra_producto_tienda: 100
-  registros_venta_producto_tienda: 100
+  items_inventario: 500
+  registros_compra_producto_tienda: 1000
+  registros_venta_producto_tienda: 1000
 
   # --- Ventas ---
-  productos_externos: 30
-  ventas: 100
-  items_venta: 200
+  productos_externos: 50
+  ventas: 500
+  items_venta: 2500
